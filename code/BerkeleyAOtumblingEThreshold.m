@@ -6,18 +6,31 @@ arguments
     options.defocusDiopters (1,1) double = 0.05;
     options.pupilDiameterMm (1,1) double = 6;
     options.accommodatedWl (1,1) double = 840;
+    options.displayNPixels (1,1) double = 512;
+    options.displayFOVDeg (1,1) double = 1.413;
+    options.wave (:,1) double = (500:5:870)';
+    options.AOPrimaryWls (1,3) double = [840 683 543]; % [700 683 54];
+    options.AOPrimaryFWHM (1,3) double = [22 27 23];
+    options.AOCornealPowersUW (1,3) double = [141.4 10 10];
+    options.ambientSpd (:,1) double = zeros(size((500:5:870)'));  % Adjust this if wave changes
+    options.pupilSizeMM (1,1) double = 6;
+    options.plotDisplayCharacteristics (1,1) logical = false;
+    options.chromaSpecification_type (1,:) char = 'RGBsettings';
+    options.chromaSpecification_backgroundRGB (1,3) double = [1 0 0];
+    options.chromaSpecification_foregroundRGB (1,3) double = [0 0 0];
+    options.eHeightMin (1,1) double = 30;
+    options.temporalModulationParams_frameRateHz (1,1) double = 60;
+    options.temporalModulationParams_numFrame (1,1) double = 3;
+    options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
+    options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
+    options.degsPerPixel = 1/362.3; 
+    options.angleList = [0 90 180 270];
     options.visualizeStimulus (1,1) logical = false;
     options.visualizeMosaicResponses (1,1) logical = false;
     options.visualizeDisplayCharacteristics (1,1) logical = false;
     options.testing (1,1) logical = false;
     options.write (1,1) logical = true;
     options.verbose (1,1) logical = false;
-    % options.spotWidthDegs (1,1) double = 1.286/60;
-    % options.spotHeightDegs (1,1) double = 1/60; 
-    % options.spotVerticalSepDegs (1,1) double =  1/60
-    options.degsPerPixel = 1/362.3; 
-    % options.conditionName (1,1) string = 'IncrDecr1';
-    options.angleList = [0 90 180 270];
 end
 
 % Initialize
@@ -48,8 +61,8 @@ fieldPowerUW = 141.4;
 fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
 
 % Spatial parameters
-nPixels = 512;
-fieldSizeMinutes = 1.413*60;
+nPixels = options.displayNPixels;
+fieldSizeMinutes = options.displayFOVDeg*60; % 1.413*60
 fieldSizeDegs = fieldSizeMinutes/60;
 
 % Get the tumbling E scene engines.
