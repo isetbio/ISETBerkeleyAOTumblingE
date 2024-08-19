@@ -53,17 +53,19 @@ if(options.write)
     if (~exist(fullfile(rootPath,'local','results'),'dir'))
         mkdir(fullfile(rootPath,'local','results'));
     end
+
+    outputFiguresDir = fullfile(rootPath, 'local', 'figures');
 end
 
 % Define the AO scene parameters for the experiment we are modeling
 % Imaging (840 nm) power in uW.
-fieldPowerUW = 141.4;
-fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
 
 % Spatial parameters
 nPixels = options.displayNPixels;
 fieldSizeMinutes = options.displayFOVDeg*60; % 1.413*60
 fieldSizeDegs = fieldSizeMinutes/60;
+fieldPowerUW = 141.4;
+fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
 
 % Get the tumbling E scene engines.
 %
@@ -120,7 +122,8 @@ params = struct(...
     'visualizedPSFwavelengths', [], ...                         % Vector with wavelengths for visualizing the PSF. If set to empty[] there is no visualization; example 400:20:700
     'visualizeDisplayCharacteristics', options.visualizeDisplayCharacteristics, ...     % Flag, indicating whether to visualize the display characteristics
     'visualizeScene', options.visualizeStimulus, ...            % Flag, indicating whether to visualize one of the scenes
-    'visualEsOnMosaic', options.visualizeMosaicResponses ...    % Flag, indicating whether to visualize E's against mosaic as function of their size
+    'visualEsOnMosaic', options.visualizeMosaicResponses, ...   % Flag, indicating whether to visualize E's against mosaic as function of their size
+    'outputFiguresDir', outputFiguresDir ...                   % directory for saving output figures
     );
 
 % % Set up summary filename and output dir
@@ -153,31 +156,11 @@ mosaicIntegrationTimeSeconds = params.mosaicIntegrationTimeSeconds;
 nTest = params.nTest;
 thresholdP = params.thresholdP;
 
-%% Create neural response engine
-%
-% This calculations isomerizations in a patch of cone mosaic with Poisson
-% noise, and includes optical blur.
-neuralParams = nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic;
+%% Create neural response engine for photopigment Excitations
 
-% Set optics params
-wls = sceneParams.wave;
-fieldSizeDegs = sceneParams.displayFOVDeg;
-accommodatedWl = options.accommodatedWl; % sceneParams.AOPrimaryWls(1)
-pupilDiameterMm = options.pupilDiameterMm;
-defocusDiopters = options.defocusDiopters;
+responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
 
-neuralParams.opticsParams.wls = wls;
-neuralParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
-neuralParams.opticsParams.defocusAmount = defocusDiopters;
-neuralParams.opticsParams.accommodatedWl = accommodatedWl;
-neuralParams.opticsParams.zCoeffs = zeros(66,1);
-neuralParams.opticsParams.defeatLCA = true;
-neuralParams.verbose = options.verbose;
-
-% Cone params
-neuralParams.coneMosaicParams.wave = wls;
-neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
-theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
+theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
 % Poisson n-way AFC
 classifierEngine = responseClassifierEngineNWay(@rcePoisson);
@@ -217,10 +200,10 @@ questEnginePara = struct( ...
     'beVerbose', true, ...
     'parameterIsContrast',false);
 
-% Plot the derived psychometric function and other things.  The lower
-% level routines put this in ISETBioJandJRootPath/figures.
-% pdfFileName = sprintf('Performance_%s_Reps_%d.pdf', strrep(params.psfDataFile, '.mat', ''), nTest);
-% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...ISETBio
+% % Plot the derived psychometric function and other things.  The lower
+% % level routines put this in ISETBioJandJRootPath/figures.
+% % pdfFileName = sprintf('Performance_%s_Reps_%d.pdf', strrep(params.psfDataFile, '.mat', ''), nTest);
+% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... % ISETBio
 %     thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), 'xRange', [0.02 0.2]);
 % if (params.visualEsOnMosaic)
 %     pdfFileName = sprintf('Simulation_%s_Reps_%d.pdf', strrep(params.psfDataFile, '.mat', ''), nTest);
@@ -258,3 +241,45 @@ questEnginePara = struct( ...
 
 
 end
+
+function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
+    % Validate responseType 
+    if ~ischar(responseType)
+        error('responseType must be a string.');
+    end
+    
+    if strcmp(responseType, 'excitation')
+        % This calculates isomerizations in a patch of cone mosaic with Poisson
+        % noise, and includes optical blur.
+        neuralParams = nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic;
+        
+        % Set optics params
+        wls = paramStruct.wave;
+        fieldSizeDegs = paramStruct.displayFOVDeg;
+        accommodatedWl = paramStruct.accommodatedWl; % sceneParams.AOPrimaryWls(1)
+        pupilDiameterMm = paramStruct.pupilDiameterMm;
+        defocusDiopters = paramStruct.defocusDiopters;
+        
+        neuralParams.opticsParams.wls = wls;
+        neuralParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
+        neuralParams.opticsParams.defocusAmount = defocusDiopters;
+        neuralParams.opticsParams.accommodatedWl = accommodatedWl;
+        neuralParams.opticsParams.zCoeffs = zeros(66,1);
+        neuralParams.opticsParams.defeatLCA = true;
+        neuralParams.verbose = paramStruct.verbose;
+        
+        % Cone params
+        neuralParams.coneMosaicParams.wave = wls;
+        neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
+        
+        % Create the neural response engine
+        theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
+    
+    elseif strcmp(responseType, 'photocurrent')
+        % TODO: add code for generating photocurrent neural response engine 
+    else
+        % If responseFlag is neither 'excitation' nor 'photocurrent'
+        error('Invalid response type: %s', responseType);
+    end
+end
+
