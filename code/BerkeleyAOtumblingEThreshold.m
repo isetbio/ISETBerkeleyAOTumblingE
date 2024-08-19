@@ -1,5 +1,24 @@
 function BerkeleyAOtumblingEThreshold(options)
 
+%% TODO
+% Need to get our scene engine arguments passed down into the tumbline E
+% scene generation tutorial function.
+%
+% Let's just have one copy of that function, the one in
+% ISETBioCSFGenerator, and pass to it the projectName informaiton it needs
+% here.
+%
+% Will need to add code to compare thresholds for the three E positions, as
+% well as figure generation/saving code of various stages of the
+% computation so we can visualized what happened and make figures for a
+% paper.
+%
+% Need to use AO optics in neural engine, and turn off chromatic
+% aberration.  This will model what the AO system does in producing the
+% retinal image.
+%
+% Need to add photocurrent filtering.
+
 %% Pick up optional arguments
 %
 % A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
