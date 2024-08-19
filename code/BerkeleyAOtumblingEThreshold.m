@@ -1,7 +1,8 @@
 function BerkeleyAOtumblingEThreshold(options)
 
 %% Pick up optional arguments
-% THESE OPTIONAL ARGS SHOULD BE UPDATED FOR TUMBLING E
+%
+% A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
 arguments
     options.defocusDiopters (1,1) double = 0.05;
     options.pupilDiameterMm (1,1) double = 6;
@@ -76,11 +77,13 @@ fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
 % The scene engine tutorial returns its parameters, which are used below to
 % try to match things up as best as possible.
 orientations = options.angleList;
+sceneEngineOptions = options;
+sceneEngineOptions.Vi
 [sce0,sce90,sce180,sce270,backgroundSceneEngine,sceneParams] = t_BerkeleyAOtumblingESceneEngine('VisualizeScene',false);
 tumblingEsceneEngines = {sce0, sce90, sce180, sce270};
 clear sce0 sce90 sce180 sce270
 
-% Parameters. These control many aspects of what gets done, particular the subject.
+% Parameters. These control many aspects of what gets done, particularly the subject.
 %
 % To run a different subject or pupil size, change 'psdDataSubdir'
 % field below to have the desired subject number in the directory string, and the desired
@@ -157,9 +160,7 @@ nTest = params.nTest;
 thresholdP = params.thresholdP;
 
 %% Create neural response engine for photopigment Excitations
-
 responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
-
 theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
 % Poisson n-way AFC
