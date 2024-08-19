@@ -1,4 +1,4 @@
-function [sce0,sce90,sce180,sce270,sceBg,sceneParams] = t_AOtumblingESceneEngine(options)
+function [sce0,sce90,sce180,sce270,sceBg,sceneParams] = t_BerkeleyAOtumblingESceneEngine(options)
 
 % Will's description of the stimulus parameters for this experiment.
 %   - Wavelength: the tumbling-E was modulated in the imaging channel. The
@@ -278,7 +278,7 @@ for ff = 1:length(theSmallEsceneSequence0degs)
         set(ax, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
         set(ax, 'FontSize', 10, 'FontWeight', 'bold');
 
-        projectBaseDir = ISETBioCSFGeneratorRootPath;
+        projectBaseDir = ISETBerkeleyAOTumblingERootPath;
         pdfFile = fullfile(projectBaseDir,'local','figures',sprintf('t_AOTumblingSceneEngine_stimuli_frame%d.pdf',ff));
         NicePlot.exportFigToPDF(pdfFile,hFig, 300);
     end
