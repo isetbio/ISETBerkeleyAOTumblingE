@@ -1,13 +1,6 @@
 function BerkeleyAOtumblingEThreshold(options)
 
 %% TODO
-% Need to get our scene engine arguments passed down into the tumbline E
-% scene generation tutorial function.
-%
-% Let's just have one copy of that function, the one in
-% ISETBioCSFGenerator, and pass to it the projectName informaiton it needs
-% here.
-%
 % Will need to add code to compare thresholds for the three E positions, as
 % well as figure generation/saving code of various stages of the
 % computation so we can visualized what happened and make figures for a
@@ -23,9 +16,7 @@ function BerkeleyAOtumblingEThreshold(options)
 %
 % A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
 arguments
-    options.defocusDiopters (1,1) double = 0.05;
-    options.pupilDiameterMm (1,1) double = 6;
-    options.accommodatedWl (1,1) double = 840;
+    options.visualizeScene (1,1) logical = false; % passing this into t_berkeleyAOtumblingESceneEngine
     options.displayNPixels (1,1) double = 512;
     options.displayFOVDeg (1,1) double = 1.413;
     options.wave (:,1) double = (500:5:870)';
@@ -43,22 +34,27 @@ arguments
     options.temporalModulationParams_numFrame (1,1) double = 3;
     options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
     options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
-    options.degsPerPixel = 1/362.3; 
-    options.angleList = [0 90 180 270];
-    options.visualizeStimulus (1,1) logical = false;
-    options.visualizeMosaicResponses (1,1) logical = false;
-    options.visualizeDisplayCharacteristics (1,1) logical = false;
-    options.testing (1,1) logical = false;
-    options.write (1,1) logical = true;
-    options.verbose (1,1) logical = false;
 end
+
+% Define the AO scene parameters for the experiment we are modeling
+% Imaging (840 nm) power in uW.
+
+aoSceneParams = struct(...
+    'defocusDiopters', 0.05, ...
+    'pupilDiameterMm', 6, ...
+    'accommodatedWl', 840, ...
+    'angleList', [0 90 180 270], ...
+    'testing', false, ...
+    'write', true, ...
+    'verbose', false ...
+);
 
 % Initialize
 close all;
 
 % Make sure figures and results directories exist so that output writes
 % don't fail
-if(options.write)
+if(aoSceneParams.write)
     rootPath = ISETBerkeleyAOTumblingERootPath;
     if (~exist(fullfile(rootPath,'local','figures'),'dir'))
         mkdir(fullfile(rootPath,'local','figures'));
@@ -77,16 +73,6 @@ if(options.write)
     outputFiguresDir = fullfile(rootPath, 'local', 'figures');
 end
 
-% Define the AO scene parameters for the experiment we are modeling
-% Imaging (840 nm) power in uW.
-
-% Spatial parameters
-nPixels = options.displayNPixels;
-fieldSizeMinutes = options.displayFOVDeg*60; % 1.413*60
-fieldSizeDegs = fieldSizeMinutes/60;
-fieldPowerUW = 141.4;
-fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
-
 % Get the tumbling E scene engines.
 %
 % At the moment cannot vary the set of orientations, but would be easy
@@ -95,10 +81,14 @@ fieldPowerUWPerDeg2 = fieldPowerUW/(fieldSizeDegs^2);
 %
 % The scene engine tutorial returns its parameters, which are used below to
 % try to match things up as best as possible.
-orientations = options.angleList;
-sceneEngineOptions = options;
-sceneEngineOptions.Vi
-[sce0,sce90,sce180,sce270,backgroundSceneEngine,sceneParams] = t_BerkeleyAOtumblingESceneEngine('VisualizeScene',false);
+
+% get scene engine arguments passed down into the tumbline E
+% scene generation tutorial function.
+orientations = aoSceneParams.angleList;
+optionsCell = [fieldnames(options), struct2cell(options)]';
+optionsCell = optionsCell(:)';
+
+[sce0,sce90,sce180,sce270,backgroundSceneEngine,sceneParams] = t_BerkeleyAOtumblingESceneEngine(optionsCell{:});
 tumblingEsceneEngines = {sce0, sce90, sce180, sce270};
 clear sce0 sce90 sce180 sce270
 
@@ -142,9 +132,9 @@ params = struct(...
     'customConeDensities', [], ...                              % Custom L-M-S ratio or empty to use default; example [0.6 0.3 0.1]
     'customPupilDiameterMM', [], ...                            % Custom pupil diameter in MM or empty to use the value from the psfDataFile
     'visualizedPSFwavelengths', [], ...                         % Vector with wavelengths for visualizing the PSF. If set to empty[] there is no visualization; example 400:20:700
-    'visualizeDisplayCharacteristics', options.visualizeDisplayCharacteristics, ...     % Flag, indicating whether to visualize the display characteristics
-    'visualizeScene', options.visualizeStimulus, ...            % Flag, indicating whether to visualize one of the scenes
-    'visualEsOnMosaic', options.visualizeMosaicResponses, ...   % Flag, indicating whether to visualize E's against mosaic as function of their size
+    'visualizeDisplayCharacteristics', false, ...     % Flag, indicating whether to visualize the display characteristics
+    'visualizeScene', false, ...            % Flag, indicating whether to visualize one of the scenes
+    'visualEsOnMosaic', false, ...   % Flag, indicating whether to visualize E's against mosaic as function of their size
     'outputFiguresDir', outputFiguresDir ...                   % directory for saving output figures
     );
 
@@ -179,6 +169,13 @@ nTest = params.nTest;
 thresholdP = params.thresholdP;
 
 %% Create neural response engine for photopigment Excitations
+
+% add all parameters to options struct
+fn = fieldnames(aoSceneParams);
+for i = 1:numel(fn)
+    options.(fn{i}) = aoSceneParams.(fn{i});
+end
+
 responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
 theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
