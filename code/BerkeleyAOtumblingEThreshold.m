@@ -176,7 +176,7 @@ for i = 1:numel(fn)
     options.(fn{i}) = aoSceneParams.(fn{i});
 end
 
-responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
+responseFlag = 'photocurrent';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
 theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
 % Poisson n-way AFC
@@ -293,7 +293,31 @@ function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
         theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
     
     elseif strcmp(responseType, 'photocurrent')
-        % TODO: add code for generating photocurrent neural response engine 
+        % This calculates photocurrent in a patch of cone mosaic with Poisson
+        % noise, and includes optical blur.
+        neuralParams = nreAOPhotocurrentWithNoEyeMovementsCMosaic;
+        
+        % Set optics params
+        wls = paramStruct.wave;
+        fieldSizeDegs = paramStruct.displayFOVDeg;
+        accommodatedWl = paramStruct.accommodatedWl;
+        pupilDiameterMm = paramStruct.pupilDiameterMm;
+        defocusDiopters = paramStruct.defocusDiopters;
+        
+        neuralParams.opticsParams.wls = wls;
+        neuralParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
+        neuralParams.opticsParams.defocusAmount = defocusDiopters;
+        neuralParams.opticsParams.accommodatedWl = accommodatedWl;
+        neuralParams.opticsParams.zCoeffs = zeros(66,1);
+        neuralParams.opticsParams.defeatLCA = true;
+        neuralParams.verbose = paramStruct.verbose;
+        
+        % Cone params
+        neuralParams.coneMosaicParams.wave = wls;
+        neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
+        
+        % Create the neural response engine
+        theNeuralEngine = neuralResponseEngine(@nreAOPhotocurrentWithNoEyeMovementsCMosaic, neuralParams); 
     else
         % If responseFlag is neither 'excitation' nor 'photocurrent'
         error('Invalid response type: %s', responseType);
