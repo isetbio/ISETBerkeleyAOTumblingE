@@ -124,7 +124,7 @@ params = struct(...
     'letterSizesNumExamined',  9, ...                           % How many sizes to use for sampling the psychometric curve (9 used in the paper)
     'maxLetterSizeDegs', 0.2, ...                               % The maximum letter size in degrees of visual angle
     'sceneUpSampleFactor', 4, ...                               % Upsample scene, so that the pixel for the smallest scene is < cone aperture
-    'mosaicIntegrationTimeSeconds', 500/1000, ...               % Integration time, here 500 msec
+    'mosaicIntegrationTimeSeconds', 1/options.temporalModulationParams_frameRateHz, ... % Integration time, matched to frame rate
     'nTest', 512, ...                                           % Number of trial to use for computing Pcorrect
     'thresholdP', 0.781, ...                                    % Probability correct level for estimating threshold performance
     'customLensAgeYears', [], ...                               % Lens age in years (valid range: 20-80), or empty to use the default age of 32.
@@ -176,7 +176,7 @@ for i = 1:numel(fn)
     options.(fn{i}) = aoSceneParams.(fn{i});
 end
 
-responseFlag = 'photocurrent';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
+responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
 theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
 % Poisson n-way AFC
@@ -288,7 +288,11 @@ function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
         % Cone params
         neuralParams.coneMosaicParams.wave = wls;
         neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
-        
+
+        % TEMPORARY.  LETS SEE IF THINGS RUN IF WE MATCH THIS UP BY BRUTE
+        % FORCE HERE.
+        neuralParams.coneMosaicParams.timeIntegrationSeconds = 1/60;
+    
         % Create the neural response engine
         theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
     
