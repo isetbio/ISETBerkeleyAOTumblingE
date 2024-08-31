@@ -273,37 +273,7 @@ function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
         % Set optics params
         wls = paramStruct.wave;
         fieldSizeDegs = paramStruct.displayFOVDeg;
-        accommodatedWl = paramStruct.accommodatedWl; % sceneParams.AOPrimaryWls(1)
-        pupilDiameterMm = paramStruct.pupilDiameterMm;
-        defocusDiopters = paramStruct.defocusDiopters;
-        
-        neuralParams.opticsParams.wls = wls;
-        neuralParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
-        neuralParams.opticsParams.defocusAmount = defocusDiopters;
-        neuralParams.opticsParams.accommodatedWl = accommodatedWl;
-        neuralParams.opticsParams.zCoeffs = zeros(66,1);
-        neuralParams.opticsParams.defeatLCA = true;
-        neuralParams.verbose = paramStruct.verbose;
-        
-        % Cone params
-        neuralParams.coneMosaicParams.wave = wls;
-        neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
-
-        % TEMPORARY.  LETS SEE IF THINGS RUN IF WE MATCH THIS UP BY BRUTE
-        % FORCE HERE.
-        neuralParams.coneMosaicParams.timeIntegrationSeconds = 1/60;
-    
-        % Create the neural response engine
-        theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
-    
-    elseif strcmp(responseType, 'photocurrent')
-        % This calculates photocurrent in a patch of cone mosaic with Poisson
-        % noise, and includes optical blur.
-        neuralParams = nreAOPhotocurrentWithNoEyeMovementsCMosaic;
-        
-        % Set optics params
-        wls = paramStruct.wave;
-        fieldSizeDegs = paramStruct.displayFOVDeg;
+        integrationTime = 1/paramStruct.temporalModulationParams_frameRateHz;
         accommodatedWl = paramStruct.accommodatedWl;
         pupilDiameterMm = paramStruct.pupilDiameterMm;
         defocusDiopters = paramStruct.defocusDiopters;
@@ -319,7 +289,37 @@ function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
         % Cone params
         neuralParams.coneMosaicParams.wave = wls;
         neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
+        neuralParams.coneMosaicParams.timeIntegrationSeconds = integrationTime;
+    
+        % Create the neural response engine
+        theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, neuralParams);
+    
+    elseif strcmp(responseType, 'photocurrent')
+        % This calculates photocurrent in a patch of cone mosaic with Poisson
+        % noise, and includes optical blur.
+        neuralParams = nreAOPhotocurrentWithNoEyeMovementsCMosaic;
         
+        % Set optics params
+        wls = paramStruct.wave;
+        fieldSizeDegs = paramStruct.displayFOVDeg;
+        integrationTime = 1/paramStruct.temporalModulationParams_frameRateHz;
+        accommodatedWl = paramStruct.accommodatedWl;
+        pupilDiameterMm = paramStruct.pupilDiameterMm;
+        defocusDiopters = paramStruct.defocusDiopters;
+        
+        neuralParams.opticsParams.wls = wls;
+        neuralParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
+        neuralParams.opticsParams.defocusAmount = defocusDiopters;
+        neuralParams.opticsParams.accommodatedWl = accommodatedWl;
+        neuralParams.opticsParams.zCoeffs = zeros(66,1);
+        neuralParams.opticsParams.defeatLCA = true;
+        neuralParams.verbose = paramStruct.verbose;
+        
+        % Cone params
+        neuralParams.coneMosaicParams.wave = wls;
+        neuralParams.coneMosaicParams.fovDegs = fieldSizeDegs;
+        neuralParams.coneMosaicParams.timeIntegrationSeconds = integrationTime; % 1/60
+
         % Create the neural response engine
         theNeuralEngine = neuralResponseEngine(@nreAOPhotocurrentWithNoEyeMovementsCMosaic, neuralParams); 
     else
