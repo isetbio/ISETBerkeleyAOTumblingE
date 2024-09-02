@@ -17,6 +17,20 @@
 		"flavor": "",
 		"hook": "",
 		"importance": "",
+		"localHookTemplate": "",
+		"name": "ISETBioJandJ",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "include",
+		"update": "",
+		"url": ""
+	},
+
+    {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
 		"localHookTemplate": "configuration/ISETBerkeleyAOTumblingELocalHookTemplate.m",
 		"name": "ISETBerkeleyAOTumblingE",
 		"pathPlacement": "append",

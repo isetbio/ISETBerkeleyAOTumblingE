@@ -34,6 +34,7 @@ arguments
     options.temporalModulationParams_numFrame (1,1) double = 3;
     options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
     options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
+    options.responseFlag (1,:) char = 'excitation'; % 'excitation' or 'photocurrent'
 end
 
 % Define the AO scene parameters for the experiment we are modeling
@@ -71,6 +72,7 @@ if(aoSceneParams.write)
     end
 
     outputFiguresDir = fullfile(rootPath, 'local', 'figures');
+    outputResultsDir = fullfile(rootPath, 'local', 'results');
 end
 
 % Get the tumbling E scene engines.
@@ -135,11 +137,12 @@ params = struct(...
     'visualizeDisplayCharacteristics', false, ...     % Flag, indicating whether to visualize the display characteristics
     'visualizeScene', false, ...            % Flag, indicating whether to visualize one of the scenes
     'visualEsOnMosaic', false, ...   % Flag, indicating whether to visualize E's against mosaic as function of their size
+    'outputResultsDir', outputResultsDir, ...
     'outputFiguresDir', outputFiguresDir ...                   % directory for saving output figures
     );
 
-% % Set up summary filename and output dir
-% summaryFileName = sprintf('Summary_%s_%dms.mat', strrep(params.psfDataSubDir, '.mat', ''), round(1000*params.mosaicIntegrationTimeSeconds));
+% Set up summary filename and output dir
+summaryFileName = sprintf('Summary_%dms.mat', round(1000*params.mosaicIntegrationTimeSeconds));
 % if (~isempty(params.customMacularPigmentDensity))
 %     summaryFileName = strrep(summaryFileName, '.mat', sprintf('_MPD_%2.2f.mat', params.customMacularPigmentDensity));
 % end
@@ -152,14 +155,14 @@ params = struct(...
 % if (~isempty(params.customLensAgeYears))
 %     summaryFileName = strrep(summaryFileName, '.mat', sprintf('_lensAge_%d.mat', params.customLensAgeYears));
 % end
-% params.outputResultsDir = fullfile(ISETBioCSFGeneratorRootPath,'local','results',strrep(summaryFileName, '.mat',''));
-% params.outputFiguresDir =  fullfile(ISETBioCSFGeneratorRootPath,'local','figures',strrep(summaryFileName, '.mat',''));
-% if (~exist(params.outputResultsDir,'dir'))
-%     mkdir(params.outputResultsDir);
-% end
-% if (~exist(params.outputFiguresDir,'dir'))
-%     mkdir(params.outputFiguresDir);
-% end
+params.outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',strrep(summaryFileName, '.mat',''));
+params.outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',strrep(summaryFileName, '.mat',''));
+if (~exist(params.outputResultsDir,'dir'))
+    mkdir(params.outputResultsDir);
+end
+if (~exist(params.outputFiguresDir,'dir'))
+    mkdir(params.outputFiguresDir);
+end
 
 % Unpack simulation params
 letterSizesNumExamined = params.letterSizesNumExamined;
@@ -176,7 +179,7 @@ for i = 1:numel(fn)
     options.(fn{i}) = aoSceneParams.(fn{i});
 end
 
-responseFlag = 'excitation';    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
+responseFlag = options.responseFlag;    % 'excitation' or 'photocurrent'. Indicating whether to create neural response engine for cone excitation or photocurrent 
 theNeuralEngine = createNeuralResponseEngine(responseFlag, options);
 
 % Poisson n-way AFC
@@ -217,20 +220,23 @@ questEnginePara = struct( ...
     'beVerbose', true, ...
     'parameterIsContrast',false);
 
-% % Plot the derived psychometric function and other things.  The lower
-% % level routines put this in ISETBioJandJRootPath/figures.
-% % pdfFileName = sprintf('Performance_%s_Reps_%d.pdf', strrep(params.psfDataFile, '.mat', ''), nTest);
-% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... % ISETBio
-%     thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), 'xRange', [0.02 0.2]);
-% if (params.visualEsOnMosaic)
-%     pdfFileName = sprintf('Simulation_%s_Reps_%d.pdf', strrep(params.psfDataFile, '.mat', ''), nTest);
-%     visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-%         thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
-%         fullfile(params.outputFiguresDir,pdfFileName));
-% end
+% Get the threshold estimate
+fprintf('Current threshold estimate: %g\n', 10 ^ threshold);
 
-% % Export the results
-% exportFileName = sprintf('Results_%s_Reps_%d.mat', strrep(params.psfDataFile, '.mat', ''), nTest);
+% Plot the derived psychometric function and other things.  The lower
+% level routines put this in ISETBioJandJRootPath/figures.
+pdfFileName = sprintf('Performance_Reps_%d.pdf', nTest);
+plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... % ISETBio
+    thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), 'xRange', [0.02 0.2]);
+if (params.visualEsOnMosaic)
+    pdfFileName = sprintf('Simulation_Reps_%d.pdf', nTest);
+    visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
+        thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
+        fullfile(params.outputFiguresDir,pdfFileName));
+end
+
+% Export the results
+exportFileName = sprintf('Results_Reps_%d.mat', nTest);
 % if (~isempty(params.customMacularPigmentDensity))
 %     exportFileName = strrep(exportFileName, '.mat', sprintf('_MPD_%2.2f.mat', params.customMacularPigmentDensity));
 % end
@@ -244,11 +250,11 @@ questEnginePara = struct( ...
 %     exportFileName = strrep(exportFileName, '.mat', sprintf('_lensAge_%d.mat', params.customLensAgeYears));
 % end
 % 
-% fprintf('Saving data to %s\n', fullfile(params.outputResultsDir,exportFileName));
-% exportSimulation(questObj, threshold, fittedPsychometricParams, ...
-%     thresholdParameters, classifierPara, questEnginePara, ...
-%     tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
-%     fullfile(params.outputResultsDir,exportFileName));
+fprintf('Saving data to %s\n', fullfile(params.outputResultsDir,exportFileName));
+exportSimulation(questObj, threshold, fittedPsychometricParams, ...
+    thresholdParameters, classifierPara, questEnginePara, ...
+    tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
+    fullfile(params.outputResultsDir,exportFileName));
 
 % logMAR(iPSF) = log10(threshold(iPSF)*60/5);
 
