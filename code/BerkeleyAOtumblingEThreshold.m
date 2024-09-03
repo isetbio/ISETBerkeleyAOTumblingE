@@ -16,9 +16,9 @@ function BerkeleyAOtumblingEThreshold(options)
 %
 % A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
 arguments
-    options.visualizeScene (1,1) logical = false; % passing this into t_berkeleyAOtumblingESceneEngine
-    options.displayNPixels (1,1) double = 512;
-    options.displayFOVDeg (1,1) double = 1.413;
+    options.visualizeScene (1,1) logical = false;          % passing this into t_berkeleyAOtumblingESceneEngine
+    options.displayNPixels (1,1) double = 512*0.2;         % Scale down because thresholds are small relative to instrument field size
+    options.displayFOVDeg (1,1) double = 1.413*0.2;        % Scale down because thresholds are small relative to instrument field size
     options.wave (:,1) double = (500:5:870)';
     options.AOPrimaryWls (1,3) double = [840 683 543]; % [700 683 54];
     options.AOPrimaryFWHM (1,3) double = [22 27 23];
@@ -124,7 +124,7 @@ clear sce0 sce90 sce180 sce270
 % customizing more things.
 params = struct(...
     'letterSizesNumExamined',  9, ...                           % How many sizes to use for sampling the psychometric curve (9 used in the paper)
-    'maxLetterSizeDegs', 0.2, ...                               % The maximum letter size in degrees of visual angle
+    'maxLetterSizeDegs', 1, ...                                 % The maximum letter size in degrees of visual angle
     'sceneUpSampleFactor', 4, ...                               % Upsample scene, so that the pixel for the smallest scene is < cone aperture
     'mosaicIntegrationTimeSeconds', 1/options.temporalModulationParams_frameRateHz, ... % Integration time, matched to frame rate
     'nTest', 512, ...                                           % Number of trial to use for computing Pcorrect
@@ -140,6 +140,11 @@ params = struct(...
     'outputResultsDir', outputResultsDir, ...
     'outputFiguresDir', outputFiguresDir ...                   % directory for saving output figures
     );
+
+% Check on size
+if (params.maxLetterSizeDegs ~= 1)
+    error('At present, the underlying code only allows a max parameter value of 1.');
+end
 
 % Set up summary filename and output dir
 summaryFileName = sprintf('Summary_%dms.mat', round(1000*params.mosaicIntegrationTimeSeconds));
@@ -192,9 +197,9 @@ classifierPara = struct('trainFlag', 'none', ...
 
 %% Parameters for threshold estimation/quest engine
 thresholdParameters = struct(...
-    'maxParamValue', maxLetterSizeDegs, ...    % The maximum value of the examined param (letter size in degs)
-    'logThreshLimitLow', 2.0, ...              % minimum log10(normalized param value)
-    'logThreshLimitHigh', 0.0, ...             % maximum log10(normalized param value)
+    'maxParamValue', maxLetterSizeDegs, ...    % The maximum value of the examined param (letter size in degs).  At present need this to be 1.
+    'logThreshLimitLow', 3, ...                % minimum log10(normalized param value).  The convention is that this means 10^-3.
+    'logThreshLimitHigh', 1, ...               % maximum log10(normalized param value).  The convention is that this means 10^-1.
     'logThreshLimitDelta', 0.01, ...
     'slopeRangeLow', 1/20, ...
     'slopeRangeHigh', 500/20, ...
@@ -226,8 +231,9 @@ fprintf('Current threshold estimate: %g\n', 10 ^ threshold);
 % Plot the derived psychometric function and other things.  The lower
 % level routines put this in ISETBioJandJRootPath/figures.
 pdfFileName = sprintf('Performance_Reps_%d.pdf', nTest);
-plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... % ISETBio
-    thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), 'xRange', [0.02 0.2]);
+plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
+    thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), ...
+    'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
 if (params.visualEsOnMosaic)
     pdfFileName = sprintf('Simulation_Reps_%d.pdf', nTest);
     visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
