@@ -17,8 +17,8 @@ function BerkeleyAOtumblingEThreshold(options)
 % A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
 arguments
     options.visualizeScene (1,1) logical = false;          % passing this into t_berkeleyAOtumblingESceneEngine
-    options.displayNPixels (1,1) double = 512*0.2;         % Scale down because thresholds are small relative to instrument field size
-    options.displayFOVDeg (1,1) double = 1.413*0.2;        % Scale down because thresholds are small relative to instrument field size
+    options.displayNPixels (1,1) double = 512*0.2;         % 512*0.2 Scale down because thresholds are small relative to instrument field size
+    options.displayFOVDeg (1,1) double = 1.413*0.2;        % 1.413*0.2 Scale down because thresholds are small relative to instrument field size
     options.wave (:,1) double = (500:5:870)';
     options.AOPrimaryWls (1,3) double = [840 683 543]; % [700 683 54];
     options.AOPrimaryFWHM (1,3) double = [22 27 23];
@@ -36,6 +36,7 @@ arguments
     options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
     options.temporalModulationParams_backgroundRGBPerFrame (:,:) double = [0 0 0; 1 0 0; 0 0 0];
     options.responseFlag (1,:) char = 'excitation'; % 'excitation' or 'photocurrent'
+    options.exportCondition (1,:) char = 'no change'; 
 end
 
 % Define the AO scene parameters for the experiment we are modeling
@@ -199,8 +200,8 @@ classifierPara = struct('trainFlag', 'none', ...
 %% Parameters for threshold estimation/quest engine
 thresholdParameters = struct(...
     'maxParamValue', maxLetterSizeDegs, ...    % The maximum value of the examined param (letter size in degs).  At present need this to be 1.
-    'logThreshLimitLow', 3, ...                % minimum log10(normalized param value).  The convention is that this means 10^-3.
-    'logThreshLimitHigh', 1, ...               % maximum log10(normalized param value).  The convention is that this means 10^-1.
+    'logThreshLimitLow', 2, ...                % 3, minimum log10(normalized param value).  The convention is that this means 10^-3.
+    'logThreshLimitHigh',0, ...               % 1, maximum log10(normalized param value).  The convention is that this means 10^-1.
     'logThreshLimitDelta', 0.01, ...
     'slopeRangeLow', 1/20, ...
     'slopeRangeHigh', 500/20, ...
@@ -218,7 +219,8 @@ questEnginePara = struct( ...
     'stopCriterion', 0.05);
 
 % Compute psychometric function for the 4AFC paradigm with the 4 E scenes
-[threshold, questObj, psychometricFunction, fittedPsychometricParams] = computeThreshold(...
+[threshold, questObj, psychometricFunction, fittedPsychometricParams, ...
+    trialByTrialStimulusAlternatives,trialByTrialPerformance] = computeThreshold(...
     tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
     classifierPara, thresholdParameters, questEnginePara, ...
     'TAFC', false, ...
@@ -229,9 +231,19 @@ questEnginePara = struct( ...
 % Get the threshold estimate
 fprintf('Current threshold estimate: %g\n', 10 ^ threshold);
 
+% temporary solution for trailByTrial printing
+% Create a containers.Map object (dictionary equivalent in MATLAB)
+keys = trialByTrialStimulusAlternatives.keys;
+fprintf('trialByTrialStimulusAlternatives contents:\n');
+for i = 1:length(keys)
+    fprintf('  %s\n', keys{i});
+end
+
 % Plot the derived psychometric function and other things.  The lower
 % level routines put this in ISETBioJandJRootPath/figures.
-pdfFileName = sprintf('Performance_Reps_%d.pdf', nTest);
+% pdfFileName = sprintf('Performance_Reps_%d.pdf', nTest);
+pdfFileName = sprintf('%s_%s_%d_%d.pdf', responseFlag, options.exportCondition, ...
+        thresholdParameters.logThreshLimitHigh, thresholdParameters.logThreshLimitLow);
 plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
     thresholdParameters, fullfile(params.outputFiguresDir,pdfFileName), ...
     'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
