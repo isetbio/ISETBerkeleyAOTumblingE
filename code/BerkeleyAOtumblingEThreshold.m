@@ -12,6 +12,19 @@ function BerkeleyAOtumblingEThreshold(options)
 %
 % Need to add photocurrent filtering.
 
+%% 10/14/24, QF, DHB.
+% 
+% This is currently behaving a little strangely, in that even for 1 deg and
+% photocurrent, performance is at change.  There are also inconsistencies
+% between the trial-by-trial data as we are analyzing it and the aggregate
+% data returned by ComputeThreshold/ComputePerformance.  We need to sort
+% that out first.  Possibly easier once we take a pass through the whole
+% ISETBioCSFGenerator as we plan to.
+%
+% In addition, when the photocurrent is turned on (via responseFlag field
+% in options below, it crashes. This is because some assertion fails.  So
+% we need to track that down.
+
 %% Pick up optional arguments
 %
 % A number of these get passed into t_BerkeleyAOtumblingSceneEngine.
