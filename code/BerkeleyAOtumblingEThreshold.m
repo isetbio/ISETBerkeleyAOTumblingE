@@ -24,6 +24,12 @@ function BerkeleyAOtumblingEThreshold(options)
 % In addition, when the photocurrent is turned on (via responseFlag field
 % in options below, it crashes. This is because some assertion fails.  So
 % we need to track that down.
+%
+% QF reports that this script takes about 30 minutes to run for excitations
+% in its default configuration.
+%
+% NEXT STEP: DHB to look at code and try to debug, possibly after doing
+% some foundational work.
 
 %% Pick up optional arguments
 %
