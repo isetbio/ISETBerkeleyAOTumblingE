@@ -13,23 +13,15 @@ function BerkeleyAOtumblingEThreshold(options)
 % Need to add photocurrent filtering.
 
 %% 10/14/24, QF, DHB.
-% 
-% This is currently behaving a little strangely, in that even for 1 deg and
-% photocurrent, performance is at change.  There are also inconsistencies
-% between the trial-by-trial data as we are analyzing it and the aggregate
-% data returned by ComputeThreshold/ComputePerformance.  We need to sort
-% that out first.  Possibly easier once we take a pass through the whole
-% ISETBioCSFGenerator as we plan to.
 %
-% In addition, when the photocurrent is turned on (via responseFlag field
+% When the photocurrent is turned on (via responseFlag field
 % in options below, it crashes. This is because some assertion fails.  So
 % we need to track that down.
 %
 % QF reports that this script takes about 30 minutes to run for excitations
 % in its default configuration.
 %
-% NEXT STEP: DHB to look at code and try to debug, possibly after doing
-% some foundational work.
+% Figure out the photocurrent issue.
 
 %% Pick up optional arguments
 %
@@ -60,7 +52,6 @@ end
 
 % Define the AO scene parameters for the experiment we are modeling
 % Imaging (840 nm) power in uW.
-
 aoSceneParams = struct(...
     'defocusDiopters', 0.05, ...
     'pupilDiameterMm', 6, ...
@@ -105,7 +96,7 @@ end
 % The scene engine tutorial returns its parameters, which are used below to
 % try to match things up as best as possible.
 
-% get scene engine arguments passed down into the tumbline E
+% Get scene engine arguments passed down into the tumbline E
 % scene generation tutorial function.
 orientations = aoSceneParams.angleList;
 optionsCell = [fieldnames(options), struct2cell(options)]';
@@ -155,9 +146,9 @@ params = struct(...
     'customConeDensities', [], ...                              % Custom L-M-S ratio or empty to use default; example [0.6 0.3 0.1]
     'customPupilDiameterMM', [], ...                            % Custom pupil diameter in MM or empty to use the value from the psfDataFile
     'visualizedPSFwavelengths', [], ...                         % Vector with wavelengths for visualizing the PSF. If set to empty[] there is no visualization; example 400:20:700
-    'visualizeDisplayCharacteristics', false, ...     % Flag, indicating whether to visualize the display characteristics
-    'visualizeScene', false, ...            % Flag, indicating whether to visualize one of the scenes
-    'visualEsOnMosaic', false, ...   % Flag, indicating whether to visualize E's against mosaic as function of their size
+    'visualizeDisplayCharacteristics', false, ...               % Flag, indicating whether to visualize the display characteristics
+    'visualizeScene', false, ...                                % Flag, indicating whether to visualize one of the scenes
+    'visualEsOnMosaic', false, ...                              % Flag, indicating whether to visualize E's against mosaic as function of their size
     'outputResultsDir', outputResultsDir, ...
     'outputFiguresDir', outputFiguresDir ...                   % directory for saving output figures
     );
@@ -198,8 +189,8 @@ nTest = params.nTest;
 thresholdP = params.thresholdP;
 
 %% Create neural response engine for photopigment Excitations
-
-% add all parameters to options struct
+%
+% Add all parameters to options struct
 fn = fieldnames(aoSceneParams);
 for i = 1:numel(fn)
     options.(fn{i}) = aoSceneParams.(fn{i});
