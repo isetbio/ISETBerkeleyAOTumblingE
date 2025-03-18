@@ -58,5 +58,7 @@ function plotDerivedPsychometricFunction(questObj, threshold, ...
     grid on; box off
     title(sprintf('threshold: %2.3f degs', threshold));
 
-    NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
+    if (~isempty(pdfFileName))
+        NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
+    end
 end

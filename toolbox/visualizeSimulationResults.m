@@ -1,5 +1,5 @@
 function visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-    thresholdParameters, tumblingEsceneEngines, theNeuralEngine, pdfFileName)
+    thresholdParameters, tumblingEsceneEngines, backgroundSceneEngine, theNeuralEngine, pdfFileName)
 
     % Choose which sizes to display
     fittedPsychometricFunction = questObj.qpPF(questObj.estDomain', fittedPsychometricParams);
@@ -15,7 +15,7 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
         % If we generate a video of noisy response instances, do so for a high-performance value
         % and also increase the mosaic integration time to 2 seconds
         performanceValuesExamined = 0.95;
-        theNeuralEngine.neuralPipeline.coneMosaic.integrationTime = 2;
+        theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.integrationTime = 2;
 
         % Figure setup
         set(hFig, 'Position', [10 10 1500 350], 'Color', [1 1 1]);
@@ -52,14 +52,6 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
             % Retrieve the sceneEngine
             sceneEngine = tumblingEsceneEngines{letterRotationIndex};
 
-            % Generate a scene engine for the background scene (zero contrast)
-            if (letterRotationIndex == 1)
-                sceneParams = sceneEngine.sceneComputeFunction();
-                backgroundSceneParams = sceneEngine.sceneParams;
-                backgroundSceneParams.chromaSpecification.foregroundRGB = sceneParams.chromaSpecification.backgroundRGB;
-                backgroundSceneEngine = createTumblingEsceneEngine(0, 'customSceneParams', backgroundSceneParams);
-            end
-
             % Compute the E scene
             theSceneSequence = sceneEngine.compute(letterSizeDegs);
             theTestScene = theSceneSequence{1};
@@ -71,22 +63,21 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
             end
 
             % Compute the optical image of the test scene
-            theOI = oiCompute(theTestScene, theNeuralEngine.neuralPipeline.optics);
+            theOI = oiCompute(theNeuralEngine.neuralPipeline.noiseFreeResponse.optics,theTestScene);
             
             if (letterRotationIndex == 1)
                 % Compute the optical image of the background scene
-                theBackgroundOI = oiCompute(theBackgroundScene, theNeuralEngine.neuralPipeline.optics);
+                theBackgroundOI = oiCompute(theNeuralEngine.neuralPipeline.noiseFreeResponse.optics,theBackgroundScene);
             end
 
-            
             % Compute cone mosaic activations to the test scene
             [theNoiseFreeConeMosaicActivation, noisyResponseInstances] = ...
-                theNeuralEngine.neuralPipeline.coneMosaic.compute(theOI, 'nTrials', 4);
+                theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.compute(theOI, 'nTrials', 4);
 
             if (letterRotationIndex == 1)
                 % Compute cone mosaic activations to the background scene
                 theNoiseFreeBackgroundConeMosaicActivation = ...
-                    theNeuralEngine.neuralPipeline.coneMosaic.compute(theBackgroundOI);
+                    theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.compute(theBackgroundOI);
             end
 
             % Compute noise-free cone modulations
@@ -106,13 +97,13 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
                 domainVisualizationTicksForThisPlot.y = [];
             end
 
-            d = sqrt(sum(theNeuralEngine.neuralPipeline.coneMosaic.coneRFpositionsDegs.^2,2));
+            d = sqrt(sum(theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.coneRFpositionsDegs.^2,2));
             roiConeIndices = find(d<0.1);
             maxModulation = max(abs(theNoiseFreeConeMosaicModulation(roiConeIndices)));
 
             ax = subplot('Position', subplotPosVectors(letterSizeIndex, letterRotationIndex).v);
             if (visualizeNoiseFreeMosaicActivation)
-                theNeuralEngine.neuralPipeline.coneMosaic.visualize(...
+                theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.visualize(...
                     'figureHandle', hFig', 'axesHandle', ax, ...
                     'activation', theNoiseFreeConeMosaicModulation, ...
                     'activationRange', maxModulation*[-1 1], ...
@@ -131,7 +122,7 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
             else
                 for iTrial = 1:size(noisyResponseInstances,1)
                 
-                    theNeuralEngine.neuralPipeline.coneMosaic.visualize(...
+                    theNeuralEngine.neuralPipeline.noiseFreeResponse.coneMosaic.visualize(...
                         'figureHandle', hFig', 'axesHandle', ax, ...
                         'activation', theNoisyConeMosaicModulations(iTrial,:,:), ...
                         'activationRange', 2*max(abs(theNoiseFreeConeMosaicModulation(:)))*[-1 1], ...
@@ -166,5 +157,7 @@ function visualizeSimulationResults(questObj, threshold, fittedPsychometricParam
         videoOBJ.close();
     end
 
-    NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
+    if (~isempty(pdfFileName))
+        NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
+    end
 end
