@@ -12,6 +12,15 @@ function BerkeleyAOtumblingEThreshold(options)
     BerkeleyAOtumblingEThreshold( ...
         'fastParams', true, ...
         'validationThresholds',[0.0283]);
+
+    BerkeleyAOtumblingEThreshold( ...
+        'fastParams', true, ...
+        'temporalModulationParams_numFrame', 6, ...
+        'temporalModulationParams_xShiftPerFrame', [0 0 0 0 0 0], ...
+        'temporalModulationParams_yShiftPerFrame', [0 0 0 0 0 0], ...
+        'temporalModulationParams_backgroundRGBPerFrame', [1 0 0; 1 0 0; 1 0 0; 1 0 0; 1 0 0; 1 0 0], ...
+        'temporalModulationParams_stimOnFrames', [0 1 1 1 0 0], ...
+        'validationThresholds',[]);
 %}
 
 %% Pick up optional arguments
@@ -47,7 +56,7 @@ arguments
 
      % Choose noise model
     %   Choices: 'Poisson'
-    %                  'Gaussian'
+    %            'Gaussian'
     options.whichNoisyInstanceNre (1,:) char = 'Poisson'
     options.gaussianSigma double = [];
 
@@ -87,6 +96,7 @@ arguments
     options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
     options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
     options.temporalModulationParams_backgroundRGBPerFrame (:,:) double = [0 0 0; 1 0 0; 0 0 0];
+    options.temporalModulationParams_stimOnFrames (:,:) double = [0 1 0];
 
     % Run the validation check?  This gets overridden to empty if other
     % options change the conditions so that the validation data don't
@@ -158,36 +168,35 @@ tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 % Print the threshold estimate
 fprintf('Current threshold estimate: %g\n', 10 ^ logThreshold);
 
-% temporary solution for trailByTrial printing
-% Create a containers.Map object (dictionary equivalent in MATLAB)
+% TrailByTrial data template
 keys = trialByTrialStimulusAlternatives.keys;
 fprintf('trialByTrialStimulusAlternatives contents:\n');
 for i = 1:length(keys)
-    trialByTrialStimulusAlternatives(keys{i})
+    trialByTrialStimulusAlternatives(keys{i});
 end
 
 % Plot the derived psychometric function and other things.  The lower
 % level routines put this in ISETBioJandJRootPath/figures.
 % pdfFileName = sprintf('Performance_Reps_%d.pdf', options.nTest);
-pdfFileName = sprintf('%s_%s_%d_%d.pdf', responseFlag, options.exportCondition, ...
-        thresholdParameters.logThreshLimitHigh, thresholdParameters.logThreshLimitLow);
-plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
-    thresholdParameters, fullfile(outputFiguresDir,pdfFileName), ...
-    'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
-if (options.visualEsOnMosaic)
-    pdfFileName = sprintf('Simulation_Reps_%d.pdf', options.nTest);
-    visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-        thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
-        fullfile(outputFiguresDir,pdfFileName));
-end
-
-% Export the results
-exportFileName = sprintf('Results_Reps_%d.mat', options.nTest);
-fprintf('Saving data to %s\n', fullfile(outputResultsDir,exportFileName));
-exportSimulation(questObj, threshold, fittedPsychometricParams, ...
-    thresholdParameters, classifierPara, questEnginePara, ...
-    tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
-    fullfile(outputResultsDir,exportFileName));
+% pdfFileName = sprintf('%s_%s_%d_%d.pdf', responseFlag, options.exportCondition, ...
+%         thresholdParameters.logThreshLimitHigh, thresholdParameters.logThreshLimitLow);
+% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
+%     thresholdParameters, fullfile(outputFiguresDir,pdfFileName), ...
+%     'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
+% if (options.visualEsOnMosaic)
+%     pdfFileName = sprintf('Simulation_Reps_%d.pdf', options.nTest);
+%     visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
+%         thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
+%         fullfile(outputFiguresDir,pdfFileName));
+% end
+% 
+% % Export the results
+% exportFileName = sprintf('Results_Reps_%d.mat', options.nTest);
+% fprintf('Saving data to %s\n', fullfile(outputResultsDir,exportFileName));
+% exportSimulation(questObj, threshold, fittedPsychometricParams, ...
+%     thresholdParameters, classifierPara, questEnginePara, ...
+%     tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
+%     fullfile(outputResultsDir,exportFileName));
 
 % Save summary,  This allows examination of the numbers and/or
 % replotting.
