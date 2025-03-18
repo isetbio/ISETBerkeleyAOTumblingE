@@ -6,28 +6,12 @@ function BerkeleyAOtumblingEThreshold(options)
 % computation so we can visualized what happened and make figures for a
 % paper.
 %
-% Need to use AO optics in neural engine, and turn off chromatic
-% aberration.  This will model what the AO system does in producing the
-% retinal image.
-%
-% Need to add photocurrent filtering.
-
-%% 10/14/24, QF, DHB.
-%
-% When the photocurrent is turned on (via responseFlag field
-% in options below, it crashes. This is because some assertion fails.  So
-% we need to track that down.
-%
-% QF reports that this script takes about 30 minutes to run for excitations
-% in its default configuration.
-%
-% Figure out the photocurrent issue.
 
 % Examples:
 %{
     BerkeleyAOtumblingEThreshold( ...
-    ...
-    );
+        'fastParams', true, ...
+        'validationThresholds',[0.0283]);
 %}
 
 %% Pick up optional arguments
@@ -37,35 +21,21 @@ arguments
     % Run with fast parameters overrides
     options.fastParams (1,1) logical = true;
 
+    % Keep rng doing the same thing each time for validation
+    options.rngSeed (1,1) double = 12;
+
     % Print out/plot  more diagnostics, or not
     options.verbose (1,1) logical = false;
     options.visualEsOnMosaic (1,1) logical = false;
-    options.visualizeScene (1,1) logical = false;                 
+    options.visualizeScene (1,1) logical = true;
 
     % Wavelength support
     options.wave (:,1) double = (500:5:870)';
 
-     % Psychometric parameters
+    % Psychometric parameters
     options.letterSizesNumExamined = 9;
     options.nTest = 512;
     options.thresholdP =  0.781;
-
-    % Scene parameters
-    options.displayNPixels (1,1) double = 128   ;                 
-    options.displayFOVDeg (1,1) double = 1.413*0.25;       
-    options.AOPrimaryWls (1,3) double = [840 683 543]; 
-    options.AOPrimaryFWHM (1,3) double = [22 27 23];
-    options.AOCornealPowersUW (1,3) double = [141.4 10 10];
-    options.plotDisplayCharacteristics (1,1) logical = false;
-    options.chromaSpecification_type (1,:) char = 'RGBsettings';
-    options.chromaSpecification_backgroundRGB (1,3) double = [1 0 0];
-    options.chromaSpecification_foregroundRGB (1,3) double = [0 0 0];
-    options.eHeightMin (1,1) double = 30;
-    options.temporalModulationParams_frameRateHz (1,1) double = 60;
-    options.temporalModulationParams_numFrame (1,1) double = 3;
-    options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
-    options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
-    options.temporalModulationParams_backgroundRGBPerFrame (:,:) double = [0 0 0; 1 0 0; 0 0 0];
 
     % Optics parameters
     options.pupilDiameterMm (1,1) double = 6;
@@ -91,9 +61,39 @@ arguments
     % sum to 1. This can also be set to some string, e.g.,
     % 'photocurrentImpulseResponseBased', in which case the filter values
     % are computed on the fly
+    %
+    % Finally, this can be 'watsonFilter'
     options.temporalFilterValues (1,:) = []
-    options.exportConditionLabel (1,:) char = 'no change'; 
 
+    % Choose classifier engine
+    %    rcePoisson - signal known exactly Poission max likelihood
+    %    rceTemplateDistance - signal known exactly nearest L2 template
+    %                 distance.
+    options.whichClassifierEngine (1,:) char = 'rcePoisson'
+
+    % AO scene parameters
+    options.displayNPixels (1,1) double = 128;
+    options.displayFOVDeg (1,1) double = 1.413;
+    options.AOPrimaryWls (1,3) double = [840 683 543]; % [700 683 54];
+    options.AOPrimaryFWHM (1,3) double = [22 27 23];
+    options.AOCornealPowersUW (1,3) double = [141.4 10 10];
+    options.plotDisplayCharacteristics (1,1) logical = false;
+    options.chromaSpecification_type (1,:) char = 'RGBsettings';
+    options.chromaSpecification_backgroundRGB (1,3) double = [1 0 0];
+    options.chromaSpecification_foregroundRGB (1,3) double = [0 0 0];
+    options.eHeightMin (1,1) double = 30;
+    options.temporalModulationParams_frameRateHz (1,1) double = 60;
+    options.temporalModulationParams_numFrame (1,1) double = 3;
+    options.temporalModulationParams_xShiftPerFrame (1,:) double = [0 10/60 0];
+    options.temporalModulationParams_yShiftPerFrame (1,:) double = [0 0 10/60];
+    options.temporalModulationParams_backgroundRGBPerFrame (:,:) double = [0 0 0; 1 0 0; 0 0 0];
+
+    % Run the validation check?  This gets overridden to empty if other
+    % options change the conditions so that the validation data don't
+    % apply.
+    options.validationThresholds (1,:) double = []
+
+    % These options do not get passed to t_BerkeleyAOtumblingETutorial
     options.writeFigures (1,1) logical = true;
 end
 
@@ -130,7 +130,8 @@ if (options.writeFigures)
 end
 
 % Set up summary filename and output dir
-summaryFileName = sprintf('Summary_%dms.mat', round(1000*integrationTime));
+summaryFileName = 'Foo';
+%summaryFileName = sprintf('Summary_%dms.mat', round(1000*integrationTime));
 outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',strrep(summaryFileName, '.mat',''));
 outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',strrep(summaryFileName, '.mat',''));
 if (~exist(outputResultsDir,'dir'))
@@ -148,7 +149,6 @@ for i = 1:numel(fn)
     tutorialOptions.(fn{i}) = options.(fn{i});
 end
 optionsTemp = options;
-optionsTemp = rmfield(optionsTemp,'exportConditionLabel');
 optionsTemp = rmfield(optionsTemp,'writeFigures');
 tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
@@ -194,72 +194,5 @@ exportSimulation(questObj, threshold, fittedPsychometricParams, ...
 % save(fullfile(outputResultsDir,summaryFileName),"examinedPSFDataFiles","threshold","logMAR","LCA","TCA","theConeMosaic");
 end
 
-function theNeuralEngine = createNeuralResponseEngine(responseType, paramStruct)
-    % Validate responseType 
-    if ~ischar(responseType)
-        error('responseType must be a string.');
-    end
-    
-    if strcmp(responseType, 'excitation')
-        % This calculates isomerizations in a patch of cone mosaic with Poisson
-        % noise, and includes optical blur.
-        nreNoiseFreeParams = nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic;
-        
-        % Set optics params
-        wls = paramStruct.wave;
-        fieldSizeDegs = paramStruct.displayFOVDeg;
-        integrationTime = 1/paramStruct.temporalModulationParams_frameRateHz;
-        accommodatedWl = paramStruct.accommodatedWl;
-        pupilDiameterMm = paramStruct.pupilDiameterMm;
-        defocusDiopters = paramStruct.defocusDiopters;
-        
-        nreNoiseFreeParams.opticsParams.wls = wls;
-        nreNoiseFreeParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
-        nreNoiseFreeParams.opticsParams.defocusAmount = defocusDiopters;
-        nreNoiseFreeParams.opticsParams.accommodatedWl = accommodatedWl;
-        nreNoiseFreeParams.opticsParams.zCoeffs = zeros(66,1);
-        nreNoiseFreeParams.opticsParams.defeatLCA = true;
-        nreNoiseFreeParams.verbose = paramStruct.verbose;
-        
-        % Cone params
-        nreNoiseFreeParams.coneMosaicParams.wave = wls;
-        nreNoiseFreeParams.coneMosaicParams.fovDegs = fieldSizeDegs;
-        nreNoiseFreeParams.coneMosaicParams.timeIntegrationSeconds = integrationTime;
-    
-        % Create the neural response engine
-        theNeuralEngine = neuralResponseEngine(@nreAOPhotopigmentExcitationsWithNoEyeMovementsCMosaic, nreNoiseFreeParams);
-    
-    elseif strcmp(responseType, 'photocurrent')
-        % This calculates photocurrent in a patch of cone mosaic with Poisson
-        % noise, and includes optical blur.
-        nreNoiseFreeParams = nreAOPhotocurrentWithNoEyeMovementsCMosaic;
-        
-        % Set optics params
-        wls = paramStruct.wave;
-        fieldSizeDegs = paramStruct.displayFOVDeg;
-        integrationTime = 1/paramStruct.temporalModulationParams_frameRateHz;
-        accommodatedWl = paramStruct.accommodatedWl;
-        pupilDiameterMm = paramStruct.pupilDiameterMm;
-        defocusDiopters = paramStruct.defocusDiopters;
-        
-        nreNoiseFreeParams.opticsParams.wls = wls;
-        nreNoiseFreeParams.opticsParams.pupilDiameterMM = pupilDiameterMm;
-        nreNoiseFreeParams.opticsParams.defocusAmount = defocusDiopters;
-        nreNoiseFreeParams.opticsParams.accommodatedWl = accommodatedWl;
-        nreNoiseFreeParams.opticsParams.zCoeffs = zeros(66,1);
-        nreNoiseFreeParams.opticsParams.defeatLCA = true;
-        nreNoiseFreeParams.verbose = paramStruct.verbose;
-        
-        % Cone params
-        nreNoiseFreeParams.coneMosaicParams.wave = wls;
-        nreNoiseFreeParams.coneMosaicParams.fovDegs = fieldSizeDegs;
-        nreNoiseFreeParams.coneMosaicParams.timeIntegrationSeconds = integrationTime; % 1/60
 
-        % Create the neural response engine
-        theNeuralEngine = neuralResponseEngine(@nreAOPhotocurrentWithNoEyeMovementsCMosaic, nreNoiseFreeParams); 
-    else
-        % If responseFlag is neither 'excitation' nor 'photocurrent'
-        error('Invalid response type: %s', responseType);
-    end
-end
 
