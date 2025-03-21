@@ -5,6 +5,12 @@
 % 3) Accumulate data
 % 4) Control plotting
 
+% Clear
+clear; close all;
+
+%% Visualization
+visualizeScene = false;
+
 letterSizeMinutes = 10;
 
 baseOffFramesStart = 1;
@@ -20,7 +26,6 @@ offFramesEnd = frameMultiplier*baseOnFramesEnd;
 totalFrames = offFramesStart + onFrames + offFramesEnd;
 
 nTest = 512;
-noiseSd = 0.1;
 
 backgroundRGB = [1 0 0];
 backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
@@ -47,7 +52,8 @@ end
 
 %% Calculations for each filter model and shift
 nReplications = 3;
-filterModels = {[], 'photocurrentImpuluseResponseBased', 'watsonFilter'};
+filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
+noiseSds = [20 20 20];
 for ss = 1:nYShifts
     for rr = 1:nReplications
         for ff = 1:length(filterModels)
@@ -57,6 +63,7 @@ for ss = 1:nYShifts
                 BerkeleyAOtumblingEThreshold( ...
                 'fastParams', false, ...
                 'rngSeed', 0, ...
+                'visualizeScene', false, ... 
                 'chromaSpecification_backgroundRGB', [1 0 0], ...
                 'chromaSpecification_foregroundRGB', [0 0 0], ...
                 'temporalModulationParams_numFrame', totalFrames, ...
@@ -72,9 +79,14 @@ for ss = 1:nYShifts
                 'nTest', nTest, ...
                 'useConeContrast', true, ...
                 'whichNoisyInstanceNre', 'Gaussian', ...
-                'gaussianSigma', noiseSd, ...
+                'gaussianSigma', noiseSds(ff), ...
                 'whichClassifierEngine', 'rceTemplateDistance', ...
                 'validationThresholds',[]);
+
+                % Thus counts on us only studying one letter size, which is
+                % enforced by the options in the call above.
+                keys = psychometricFunction{ss,rr,ff}.keys;
+                pCorrect(ss,rr,ff) = psychometricFunction{ss,rr,ff}(keys{1});
         end
     end
 end
