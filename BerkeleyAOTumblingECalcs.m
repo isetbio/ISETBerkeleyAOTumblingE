@@ -5,36 +5,48 @@
 % 3) Accumulate data
 % 4) Control plotting
 
-% Clear
+%% Clear
 clear; close all;
 
 %% Visualization
 visualizeScene = false;
 
+%% Parameters
+%
+% Letter size
 letterSizeMinutes = 10;
 
+% Frames off, on , off in native experimental frame duration.
+% These get expanded if we simulate faster.
 baseOffFramesStart = 1;
 baseOnFrames = 3;
-baseOnFramesEnd = 3;
+baseOffFramesEnd = 3;
 
+% Experimental and simulation frame rates.  The latter
+% must be an integer multiple of the former.
 expTemporalFrequencyHz = 30;
 temporalFrequencyHz = 90;
+
+% Compute simulation frame rate timing
 frameMultiplier = temporalFrequencyHz/expTemporalFrequencyHz ;
 offFramesStart = frameMultiplier*baseOffFramesStart;
 onFrames = frameMultiplier*baseOnFrames;
-offFramesEnd = frameMultiplier*baseOnFramesEnd;
+offFramesEnd = frameMultiplier*baseOffFramesEnd;
 totalFrames = offFramesStart + onFrames + offFramesEnd;
 
+% When is stimulus on?
+stimOnFrames = zeros(1,totalFrames);
+stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
+
+% Number of tests to simulate for each condition
 nTest = 512;
 
+% Background info
 backgroundRGB = [1 0 0];
 backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
 foregroundRGB = [0 0 0];
 
-stimOnFrames = zeros(1,totalFrames);
-stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
-
-% Set up y shift vectors for eash of the three steps
+% Set up y shift vectors for each of the three steps
 nYShifts = 3;
 rawYShiftMinutes = 2;
 for ss = 1:nYShifts
@@ -52,7 +64,9 @@ end
 
 %% Calculations for each filter model and shift
 nReplications = 3;
-filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
+%filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
+filterModels = {'watsonFilter'};
+watsonParams_tau = 12;
 noiseSds = [20 20 20];
 yJitterRangeMinutes = 2;
 for ss = 1:nYShifts
@@ -75,6 +89,7 @@ for ss = 1:nYShifts
                 'temporalModulationParams_stimOnFrames', stimOnFrames, ...
                 'temporalModulationParams_frameRateHz', temporalFrequencyHz , ...
                 'temporalFilterValues', filterModels{ff}, ...
+                'watsonParams_tau', watsonParams_tau, ...
                 'minLetterSizeMinutes', letterSizeMinutes , ...
                 'maxLetterSizeMinutes', letterSizeMinutes , ...
                 'letterSizesNumExamined', 1, ...
