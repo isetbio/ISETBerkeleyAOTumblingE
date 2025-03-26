@@ -26,6 +26,9 @@ baseOffFramesEnd = 3;
 % must be an integer multiple of the former.
 expTemporalFrequencyHz = 30;
 temporalFrequencyHz = 90;
+if (rem(temporalFrequencyHz,expTemporalFrequencyHz) ~= 0)
+    error('Temporal frequency must be an integer multiple of experimental temporal frequency');
+end
 
 % Compute simulation frame rate timing
 frameMultiplier = temporalFrequencyHz/expTemporalFrequencyHz ;

@@ -5,7 +5,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
 %{
     BerkeleyAOtumblingEThreshold( ...
         'fastParams', true, ...
-        'validationThresholds',[0.0268]);
+        'validationThresholds',[0.028]);
 
     BerkeleyAOtumblingEThreshold( ...
         'fastParams', false, ...
@@ -77,6 +77,7 @@ arguments
     options.verbose (1,1) logical = false;
     options.visualEsOnMosaic (1,1) logical = false;
     options.visualizeScene (1,1) logical = true;
+    options.scenePdfFileBase (1,:) char = '';
 
     % Wavelength support
     options.wave (:,1) double = (500:5:870)';
@@ -147,6 +148,8 @@ arguments
 
     % These options do not get passed to t_BerkeleyAOtumblingETutorial
     options.writeFigures (1,1) logical = true;
+    options.writeSummary (1,1) logical = true;
+    options.fileSuffix (1,:) char = 'Example';
 end
 
 %% Initialize
@@ -182,10 +185,12 @@ if (options.writeFigures)
 end
 
 % Set up summary filename and output dir
-summaryFileName = 'Foo';
-%summaryFileName = sprintf('Summary_%dms.mat', round(1000*integrationTime));
-outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',strrep(summaryFileName, '.mat',''));
-outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',strrep(summaryFileName, '.mat',''));
+%
+% Saving these with an options string that the user can set to denote the
+% condtions.
+summaryFileName = ['BerkeleyAOtumblingEThreshold_' options.fileSuffix];
+outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',summaryFileName);
+outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',summaryFileName);
 if (~exist(outputResultsDir,'dir'))
     mkdir(outputResultsDir);
 end
@@ -202,6 +207,12 @@ for i = 1:numel(fn)
 end
 optionsTemp = options;
 optionsTemp = rmfield(optionsTemp,'writeFigures');
+optionsTemp = rmfield(optionsTemp,'writeSummary');
+optionsTemp = rmfield(optionsTemp,'fileSuffix');
+
+% We'll make these plots here if we want them
+optionsTemp.plotPsychometric = false;
+optionsTemp.visualEsOnMosaic = false;
 tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
     trialByTrialStimulusAlternatives,trialByTrialPerformance] = ...
@@ -219,30 +230,28 @@ end
 
 % Plot the derived psychometric function and other things.  The lower
 % level routines put this in ISETBioJandJRootPath/figures.
-% pdfFileName = sprintf('Performance_Reps_%d.pdf', options.nTest);
-% pdfFileName = sprintf('%s_%s_%d_%d.pdf', responseFlag, options.exportCondition, ...
-%         thresholdParameters.logThreshLimitHigh, thresholdParameters.logThreshLimitLow);
-% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
-%     thresholdParameters, fullfile(outputFiguresDir,pdfFileName), ...
-%     'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
-% if (options.visualEsOnMosaic)
-%     pdfFileName = sprintf('Simulation_Reps_%d.pdf', options.nTest);
-%     visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-%         thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
-%         fullfile(outputFiguresDir,pdfFileName));
-% end
-% 
-% % Export the results
-% exportFileName = sprintf('Results_Reps_%d.mat', options.nTest);
-% fprintf('Saving data to %s\n', fullfile(outputResultsDir,exportFileName));
-% exportSimulation(questObj, threshold, fittedPsychometricParams, ...
-%     thresholdParameters, classifierPara, questEnginePara, ...
-%     tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
-%     fullfile(outputResultsDir,exportFileName));
+pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
+[stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
+        pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
+
+% Print out table of stimulus levels and pCorrect
+fprintf('\nMeasured performance\n')
+for ii = 1:length(stimulusLevels)
+    fprintf('%0.2f min (%0.3f deg), %0.2f pCorrect\n',60*stimulusLevels(ii),stimulusLevels(ii),pCorrect(ii));
+end
+fprintf('\n');
+
+if (options.visualEsOnMosaic)
+    pdfFileName = fullfile(outputFiguresDir,sprintf('Simulation_Reps_%d.pdf', options.nTest));
+    visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
+        thresholdPara, tumblingEsceneEngines, theNeuralEngine, ...
+        fullfile(outputFiguresDir,pdfFileName));
+end
 
 % Save summary,  This allows examination of the numbers and/or
 % replotting.
-% save(fullfile(outputResultsDir,summaryFileName),"examinedPSFDataFiles","threshold","logMAR","LCA","TCA","theConeMosaic");
+save(fullfile(outputResultsDir,[summaryFileName '.mat']),'-v7.3');
+
 end
 
 
