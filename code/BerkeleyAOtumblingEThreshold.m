@@ -221,7 +221,9 @@ optionsTemp = rmfield(optionsTemp,'fileSuffix');
 % We'll make these plots here if we want them, so pass false to the
 % lower level call.
 optionsTemp.plotPsychometric = false;
-optionsTemp.scenePdfFileBase = '';
+if (~isempty(options.scenePdfFileBase))
+    optionsTemp.scenePdfFileBase = fullfile(outputFiguresDir,options.scenePdfFileBase);
+end
 if (~isempty(options.visualizeEsFileBase))
     optionsTemp.visualizeEsFileBase = fullfile(outputFiguresDir,options.visualizeEsFileBase);
 end
