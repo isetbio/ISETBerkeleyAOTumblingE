@@ -5,6 +5,12 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
 %{
     BerkeleyAOtumblingEThreshold( ...
         'fastParams', true, ...
+        'visualizeScene', true, ...
+        'fileSuffix', 'FastExample', ...
+        'scenePdfFileBase', 'FastExampleScene', ...
+        'visualizeEsOnMosaic', false, ...
+        'visualizeEsWhichFrames', 2, ... 
+        'visualizeEsFileBase', 'FastExample', ...
         'validationThresholds',[0.028]);
 
     BerkeleyAOtumblingEThreshold( ...
@@ -75,7 +81,9 @@ arguments
 
     % Print out/plot  more diagnostics, or not
     options.verbose (1,1) logical = false;
-    options.visualEsOnMosaic (1,1) logical = false;
+    options.visualizeEsOnMosaic (1,1) logical = false;
+    options.visualizeEsWhichFrames (1,:) double = 1;
+    options.visualizeEsFileBase (1,:) char = '';
     options.visualizeScene (1,1) logical = true;
     options.scenePdfFileBase (1,:) char = '';
 
@@ -210,16 +218,25 @@ optionsTemp = rmfield(optionsTemp,'writeFigures');
 optionsTemp = rmfield(optionsTemp,'writeSummary');
 optionsTemp = rmfield(optionsTemp,'fileSuffix');
 
-% We'll make these plots here if we want them
+% We'll make these plots here if we want them, so pass false to the
+% lower level call.
 optionsTemp.plotPsychometric = false;
-optionsTemp.visualEsOnMosaic = false;
-tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
-[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives,trialByTrialPerformance] = ...
-    t_BerkeleyAOtumblingEThreshold(tutorialOptionsCell{:});
+optionsTemp.scenePdfFileBase = '';
+if (~isempty(options.visualizeEsFileBase))
+    optionsTemp.visualizeEsFileBase = fullfile(outputFiguresDir,options.visualizeEsFileBase);
+end
 
-% Print the threshold estimate
-fprintf('Current threshold estimate: %g\n', 10 ^ logThreshold);
+% Put structure in right form for arguments block
+tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
+
+% Do the hard work
+[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
+    trialByTrialStimulusAlternatives, trialByTrialPerformance, thresholdPara] = ...
+    t_BerkeleyAOtumblingEThreshold(tutorialOptionsCell{:});
+threshold = 10.^logThreshold;
+
+%% Print the threshold estimate
+fprintf('Current threshold estimate: %g\n', threshold);
 
 % TrailByTrial data template
 keys = trialByTrialStimulusAlternatives.keys;
@@ -232,7 +249,7 @@ end
 % level routines put this in ISETBioJandJRootPath/figures.
 pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
 [stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
-        pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
+        thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
 
 % Print out table of stimulus levels and pCorrect
 fprintf('\nMeasured performance\n')
@@ -240,13 +257,6 @@ for ii = 1:length(stimulusLevels)
     fprintf('%0.2f min (%0.3f deg), %0.2f pCorrect\n',60*stimulusLevels(ii),stimulusLevels(ii),pCorrect(ii));
 end
 fprintf('\n');
-
-if (options.visualEsOnMosaic)
-    pdfFileName = fullfile(outputFiguresDir,sprintf('Simulation_Reps_%d.pdf', options.nTest));
-    visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-        thresholdPara, tumblingEsceneEngines, theNeuralEngine, ...
-        fullfile(outputFiguresDir,pdfFileName));
-end
 
 % Save summary,  This allows examination of the numbers and/or
 % replotting.
