@@ -8,9 +8,10 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'visualizeScene', true, ...
         'fileSuffix', 'FastExample', ...
         'scenePdfFileBase', 'FastExampleScene', ...
-        'visualizeEsOnMosaic', false, ...
+        'visualizeEsOnMosaic', true, ...
         'visualizeEsWhichFrames', 2, ... 
         'visualizeEsFileBase', 'FastExample', ...
+        'temporalModulationParams_backgroundRGBPerFrame', [0 0 0; 1 0 0; 0 0 0], ...
         'validationThresholds',[0.028]);
 
     BerkeleyAOtumblingEThreshold( ...
@@ -232,8 +233,8 @@ end
 tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 
 % Do the hard work
-[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives, trialByTrialPerformance, thresholdPara] = ...
+[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, thresholdPara, ...
+    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialResponses] = ...
     t_BerkeleyAOtumblingEThreshold(tutorialOptionsCell{:});
 threshold = 10.^logThreshold;
 
@@ -241,10 +242,19 @@ threshold = 10.^logThreshold;
 fprintf('Current threshold estimate: %g\n', threshold);
 
 % TrailByTrial data template
-keys = trialByTrialStimulusAlternatives.keys;
-fprintf('trialByTrialStimulusAlternatives contents:\n');
+stimKeys = trialByTrialStimulusAlternatives.keys;
+performanceKeys = trialByTrialPerformance.keys;
+if (length(stimKeys) ~= length(performanceKeys))
+    error('Should have same number of stimuli as perfomance');
+end
+responseKeys = trialByTrialResponses.keys;
+if (length(stimKeys) ~= length(responseKeys))
+    error('Should have same number of stimuli as responses');
+end
 for i = 1:length(keys)
-    trialByTrialStimulusAlternatives(keys{i});
+    trialByTrialStimulusAlternatives(stimKeys{i})
+    trialByTrialPerformance(performanceKeys{i})
+    trialByTrialResponses(responseKeys{i})
 end
 
 % Plot the derived psychometric function and other things.  The lower
