@@ -252,9 +252,9 @@ if (length(stimKeys) ~= length(whichResponseKeys))
     error('Should have same number of stimuli as which responses');
 end
 for i = 1:length(stimKeys)
-    trialByTrialStimulusAlternatives(stimKeys{i})
-    trialByTrialPerformance(performanceKeys{i})
-    trialByTrialWhichResponses(whichResponseKeys{i})
+    trialByTrialStimulusAlternatives(stimKeys{i});
+    trialByTrialPerformance(performanceKeys{i});
+    trialByTrialWhichResponses(whichResponseKeys{i});
 end
 
 % Plot the derived psychometric function and other things.  The lower
