@@ -1,13 +1,20 @@
 function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives,trialByTrialPerformance] = BerkeleyAOtumblingEThreshold(options)
+    trialByTrialStimulusAlternatives,trialByTrialPerformance] = BerkeleyAOTumblingEThreshold(options)
 
 % Examples:
 %{
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', true, ...
-        'validationThresholds',[0.0268]);
+        'visualizeScene', true, ...
+        'fileSuffix', 'FastExample', ...
+        'scenePdfFileBase', 'FastExampleScene', ...
+        'visualizeEsOnMosaic', true, ...
+        'visualizeEsWhichFrames', 2, ... 
+        'visualizeEsFileBase', 'FastExample', ...
+        'temporalModulationParams_backgroundRGBPerFrame', [0 0 0; 1 0 0; 0 0 0], ...
+        'validationThresholds',[0.028]);
 
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -25,7 +32,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'whichClassifierEngine', 'rceTemplateDistance', ...
         'validationThresholds',[]);
 
-     BerkeleyAOtumblingEThreshold( ...
+     BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -43,7 +50,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'whichClassifierEngine', 'rceTemplateDistance', ...
         'validationThresholds',[]);
 
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -75,8 +82,11 @@ arguments
 
     % Print out/plot  more diagnostics, or not
     options.verbose (1,1) logical = false;
-    options.visualEsOnMosaic (1,1) logical = false;
+    options.visualizeEsOnMosaic (1,1) logical = false;
+    options.visualizeEsWhichFrames (1,:) double = 1;
+    options.visualizeEsFileBase (1,:) char = '';
     options.visualizeScene (1,1) logical = true;
+    options.scenePdfFileBase (1,:) char = '';
 
     % Wavelength support
     options.wave (:,1) double = (500:5:870)';
@@ -145,8 +155,10 @@ arguments
     % apply.
     options.validationThresholds (1,:) double = []
 
-    % These options do not get passed to t_BerkeleyAOtumblingETutorial
+    % These options do not get passed to t_BerkeleyAOTumblingETutorial
     options.writeFigures (1,1) logical = true;
+    options.writeSummary (1,1) logical = true;
+    options.fileSuffix (1,:) char = 'Example';
 end
 
 %% Initialize
@@ -182,10 +194,12 @@ if (options.writeFigures)
 end
 
 % Set up summary filename and output dir
-summaryFileName = 'Foo';
-%summaryFileName = sprintf('Summary_%dms.mat', round(1000*integrationTime));
-outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',strrep(summaryFileName, '.mat',''));
-outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',strrep(summaryFileName, '.mat',''));
+%
+% Saving these with an options string that the user can set to denote the
+% condtions.
+summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
+outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',summaryFileName);
+outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',summaryFileName);
 if (~exist(outputResultsDir,'dir'))
     mkdir(outputResultsDir);
 end
@@ -202,47 +216,64 @@ for i = 1:numel(fn)
 end
 optionsTemp = options;
 optionsTemp = rmfield(optionsTemp,'writeFigures');
+optionsTemp = rmfield(optionsTemp,'writeSummary');
+optionsTemp = rmfield(optionsTemp,'fileSuffix');
+
+% We'll make these plots here if we want them, so pass false to the
+% lower level call.
+optionsTemp.plotPsychometric = false;
+if (~isempty(options.scenePdfFileBase))
+    optionsTemp.scenePdfFileBase = fullfile(outputFiguresDir,options.scenePdfFileBase);
+end
+if (~isempty(options.visualizeEsFileBase))
+    optionsTemp.visualizeEsFileBase = fullfile(outputFiguresDir,options.visualizeEsFileBase);
+end
+
+% Put structure in right form for arguments block
 tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
-[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives,trialByTrialPerformance] = ...
-    t_BerkeleyAOtumblingEThreshold(tutorialOptionsCell{:});
 
-% Print the threshold estimate
-fprintf('Current threshold estimate: %g\n', 10 ^ logThreshold);
+% Do the hard work
+[logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, thresholdPara, ...
+    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialWhichResponses] = ...
+    t_BerkeleyAOTumblingEThreshold(tutorialOptionsCell{:});
+threshold = 10.^logThreshold;
 
-% TrailByTrial data template
-keys = trialByTrialStimulusAlternatives.keys;
-fprintf('trialByTrialStimulusAlternatives contents:\n');
-for i = 1:length(keys)
-    trialByTrialStimulusAlternatives(keys{i});
+%% Print the threshold estimate
+fprintf('Current threshold estimate: %g\n', threshold);
+
+% Trail by trial data template
+stimKeys = trialByTrialStimulusAlternatives.keys;
+performanceKeys = trialByTrialPerformance.keys;
+if (length(stimKeys) ~= length(performanceKeys))
+    error('Should have same number of stimuli as perfomance');
+end
+whichResponseKeys = trialByTrialWhichResponses.keys;
+if (length(stimKeys) ~= length(whichResponseKeys))
+    error('Should have same number of stimuli as which responses');
+end
+for i = 1:length(stimKeys)
+    trialByTrialStimulusAlternatives(stimKeys{i})
+    trialByTrialPerformance(performanceKeys{i})
+    trialByTrialWhichResponses(whichResponseKeys{i})
 end
 
 % Plot the derived psychometric function and other things.  The lower
 % level routines put this in ISETBioJandJRootPath/figures.
-% pdfFileName = sprintf('Performance_Reps_%d.pdf', options.nTest);
-% pdfFileName = sprintf('%s_%s_%d_%d.pdf', responseFlag, options.exportCondition, ...
-%         thresholdParameters.logThreshLimitHigh, thresholdParameters.logThreshLimitLow);
-% plotDerivedPsychometricFunction(questObj, threshold, fittedPsychometricParams, ... 
-%     thresholdParameters, fullfile(outputFiguresDir,pdfFileName), ...
-%     'xRange', [10.^-thresholdParameters.logThreshLimitLow  10.^-thresholdParameters.logThreshLimitHigh]);
-% if (options.visualEsOnMosaic)
-%     pdfFileName = sprintf('Simulation_Reps_%d.pdf', options.nTest);
-%     visualizeSimulationResults(questObj, threshold, fittedPsychometricParams, ...
-%         thresholdParameters, tumblingEsceneEngines, theNeuralEngine, ...
-%         fullfile(outputFiguresDir,pdfFileName));
-% end
-% 
-% % Export the results
-% exportFileName = sprintf('Results_Reps_%d.mat', options.nTest);
-% fprintf('Saving data to %s\n', fullfile(outputResultsDir,exportFileName));
-% exportSimulation(questObj, threshold, fittedPsychometricParams, ...
-%     thresholdParameters, classifierPara, questEnginePara, ...
-%     tumblingEsceneEngines, theNeuralEngine, classifierEngine, ...
-%     fullfile(outputResultsDir,exportFileName));
+pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
+[stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
+        thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
+
+% Print out table of stimulus levels and pCorrect
+fprintf('\nMeasured performance\n')
+for ii = 1:length(stimulusLevels)
+    fprintf('%0.2f min (%0.3f deg), %0.2f pCorrect\n',60*stimulusLevels(ii),stimulusLevels(ii),pCorrect(ii));
+end
+fprintf('\n');
 
 % Save summary,  This allows examination of the numbers and/or
 % replotting.
-% save(fullfile(outputResultsDir,summaryFileName),"examinedPSFDataFiles","threshold","logMAR","LCA","TCA","theConeMosaic");
+save(fullfile(outputResultsDir,[summaryFileName '.mat']),'-v7.3');
+
 end
 
 
