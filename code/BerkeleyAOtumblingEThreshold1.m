@@ -1,9 +1,9 @@
 function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives,trialByTrialPerformance] = BerkeleyAOtumblingEThreshold(options)
+    trialByTrialStimulusAlternatives,trialByTrialPerformance] = BerkeleyAOTumblingEThreshold(options)
 
 % Examples:
 %{
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', true, ...
         'visualizeScene', true, ...
         'fileSuffix', 'FastExample', ...
@@ -14,7 +14,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'temporalModulationParams_backgroundRGBPerFrame', [0 0 0; 1 0 0; 0 0 0], ...
         'validationThresholds',[0.028]);
 
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -32,7 +32,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'whichClassifierEngine', 'rceTemplateDistance', ...
         'validationThresholds',[]);
 
-     BerkeleyAOtumblingEThreshold( ...
+     BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -50,7 +50,7 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
         'whichClassifierEngine', 'rceTemplateDistance', ...
         'validationThresholds',[]);
 
-    BerkeleyAOtumblingEThreshold( ...
+    BerkeleyAOTumblingEThreshold( ...
         'fastParams', false, ...
         'temporalModulationParams_numFrame', 6, ...
         'temporalModulationParams_xShiftPerFrameMin', [0 0 0  0  0 0], ...
@@ -155,7 +155,7 @@ arguments
     % apply.
     options.validationThresholds (1,:) double = []
 
-    % These options do not get passed to t_BerkeleyAOtumblingETutorial
+    % These options do not get passed to t_BerkeleyAOTumblingETutorial
     options.writeFigures (1,1) logical = true;
     options.writeSummary (1,1) logical = true;
     options.fileSuffix (1,:) char = 'Example';
@@ -197,7 +197,7 @@ end
 %
 % Saving these with an options string that the user can set to denote the
 % condtions.
-summaryFileName = ['BerkeleyAOtumblingEThreshold_' options.fileSuffix];
+summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
 outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',summaryFileName);
 outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',summaryFileName);
 if (~exist(outputResultsDir,'dir'))
@@ -234,27 +234,27 @@ tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 
 % Do the hard work
 [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, thresholdPara, ...
-    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialResponses] = ...
-    t_BerkeleyAOtumblingEThreshold(tutorialOptionsCell{:});
+    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialWhichResponses] = ...
+    t_BerkeleyAOTumblingEThreshold(tutorialOptionsCell{:});
 threshold = 10.^logThreshold;
 
 %% Print the threshold estimate
 fprintf('Current threshold estimate: %g\n', threshold);
 
-% TrailByTrial data template
+% Trail by trial data template
 stimKeys = trialByTrialStimulusAlternatives.keys;
 performanceKeys = trialByTrialPerformance.keys;
 if (length(stimKeys) ~= length(performanceKeys))
     error('Should have same number of stimuli as perfomance');
 end
-responseKeys = trialByTrialResponses.keys;
-if (length(stimKeys) ~= length(responseKeys))
-    error('Should have same number of stimuli as responses');
+whichResponseKeys = trialByTrialWhichResponses.keys;
+if (length(stimKeys) ~= length(whichResponseKeys))
+    error('Should have same number of stimuli as which responses');
 end
-for i = 1:length(keys)
+for i = 1:length(stimKeys)
     trialByTrialStimulusAlternatives(stimKeys{i})
     trialByTrialPerformance(performanceKeys{i})
-    trialByTrialResponses(responseKeys{i})
+    trialByTrialWhichResponses(whichResponseKeys{i})
 end
 
 % Plot the derived psychometric function and other things.  The lower
