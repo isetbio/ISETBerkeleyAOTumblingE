@@ -20,7 +20,7 @@ letterSizeMinutes = 10;
 % These get expanded if we simulate faster.
 baseOffFramesStart = 1;
 baseOnFrames = 3;
-baseOffFramesEnd = 3;
+baseOffFramesEnd = 6;
 
 % Experimental and simulation frame rates.  The latter
 % must be an integer multiple of the former.
