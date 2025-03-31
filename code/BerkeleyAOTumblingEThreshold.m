@@ -3,15 +3,14 @@ function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometr
 
 % Examples:
 %{
+    fileSuffix = 'FastExample';
     BerkeleyAOTumblingEThreshold( ...
         'fastParams', true, ...
         'visualizeScene', true, ...
-        'fileSuffix', 'FastExample', ...
-        'scenePdfFileBase', 'FastExampleScene', ...
         'visualizeEsOnMosaic', true, ...
         'visualizeEsWhichFrames', 2, ... 
-        'visualizeEsFileBase', 'FastExample', ...
         'temporalModulationParams_backgroundRGBPerFrame', [0 0 0; 1 0 0; 0 0 0], ...
+        'fileSuffix', fileSuffix, ...
         'validationThresholds',[0.028]);
 
     BerkeleyAOTumblingEThreshold( ...
@@ -84,9 +83,7 @@ arguments
     options.verbose (1,1) logical = false;
     options.visualizeEsOnMosaic (1,1) logical = false;
     options.visualizeEsWhichFrames (1,:) double = 1;
-    options.visualizeEsFileBase (1,:) char = '';
     options.visualizeScene (1,1) logical = true;
-    options.scenePdfFileBase (1,:) char = '';
 
     % Wavelength support
     options.wave (:,1) double = (500:5:870)';
@@ -112,7 +109,7 @@ arguments
     options.whichNoisyInstanceNre (1,:) char = 'Poisson'
     options.gaussianSigma double = [];
 
-     % Apply temporal filter?
+    % Apply temporal filter?
     %
     % The timebase of the filter is assumed to match the frame rate, so we
     % only need to specify a list of filter values.  Since these can
@@ -206,6 +203,8 @@ end
 if (~exist(outputFiguresDir,'dir'))
     mkdir(outputFiguresDir);
 end
+options.scenePdfFileBase = fullfile(outputFiguresDir,'Scene');
+options.visualizeEsFileBase = fullfile(outputFiguresDir,'EsOnMosaic');
 
 %% Do all the hard work in the CSF generator tutorial function
 %
@@ -222,12 +221,6 @@ optionsTemp = rmfield(optionsTemp,'fileSuffix');
 % We'll make these plots here if we want them, so pass false to the
 % lower level call.
 optionsTemp.plotPsychometric = false;
-if (~isempty(options.scenePdfFileBase))
-    optionsTemp.scenePdfFileBase = fullfile(outputFiguresDir,options.scenePdfFileBase);
-end
-if (~isempty(options.visualizeEsFileBase))
-    optionsTemp.visualizeEsFileBase = fullfile(outputFiguresDir,options.visualizeEsFileBase);
-end
 
 % Put structure in right form for arguments block
 tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
