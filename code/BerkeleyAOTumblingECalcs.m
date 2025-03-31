@@ -156,7 +156,6 @@ for ss = 1:nShifts
     end
 end
 
-
 % Pos x shift
 for ss = 1:nShifts
     jitterMinutes(ss) = jitterRangeMinutes*(rand-0.5);
