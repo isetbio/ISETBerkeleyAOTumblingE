@@ -231,10 +231,18 @@ tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
     t_BerkeleyAOTumblingEThreshold(tutorialOptionsCell{:});
 threshold = 10.^logThreshold;
 
+
 %% Print the threshold estimate
 fprintf('Current threshold estimate: %g\n', threshold);
 
-% Trail by trial data template
+% Plot the derived psychometric function and other things.  The lower
+% level routines put this in ISETBioJandJRootPath/figures.
+pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
+[stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
+        thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
+
+
+% Trial by trial data template
 stimKeys = trialByTrialStimulusAlternatives.keys;
 performanceKeys = trialByTrialPerformance.keys;
 if (length(stimKeys) ~= length(performanceKeys))
@@ -245,16 +253,31 @@ if (length(stimKeys) ~= length(whichResponseKeys))
     error('Should have same number of stimuli as which responses');
 end
 for i = 1:length(stimKeys)
-    trialByTrialStimulusAlternatives(stimKeys{i});
-    trialByTrialPerformance(performanceKeys{i});
-    trialByTrialWhichResponses(whichResponseKeys{i});
-end
+    tByTStimAlternatives = trialByTrialStimulusAlternatives(stimKeys{i});
+    tByTPerformance = trialByTrialPerformance(performanceKeys{i});
+    tByTResponseAlternatives = trialByTrialWhichResponses(whichResponseKeys{i});
+    checkPerformance = double(tByTStimAlternatives == tByTResponseAlternatives);
+    if (any(tByTPerformance ~= checkPerformance))
+        error('Inconsistency in performance report');
+    end
+    if (pCorrect ~= sum(checkPerformance)/length(checkPerformance))
+        error('Inconsistency in pCorrect');
+    end
 
-% Plot the derived psychometric function and other things.  The lower
-% level routines put this in ISETBioJandJRootPath/figures.
-pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
-[stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
-        thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
+    % Get confusion matrix
+    nAlternatives = length(unique(tByTStimAlternatives));
+    if (nAlternatives ~= 4)
+        error('Should have four alternatives');
+    end
+    pRespondAAWithStimBB = zeros(nAlternatives,nAlternatives);
+    for aa = 1:nAlternatives
+        for bb = 1:nAlternatives
+            index = find(tByTStimAlternatives == bb);
+            pRespondAAWithStimBB(aa,bb) = sum(tByTResponseAlternatives(index) == aa)/length(index);           
+        end
+    end
+
+end
 
 % Print out table of stimulus levels and pCorrect
 fprintf('\nMeasured performance\n')
