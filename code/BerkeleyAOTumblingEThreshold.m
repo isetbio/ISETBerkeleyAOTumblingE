@@ -155,6 +155,7 @@ arguments
     % These options do not get passed to t_BerkeleyAOTumblingETutorial
     options.writeFigures (1,1) logical = true;
     options.writeSummary (1,1) logical = true;
+    options.rootPath (1,:) char = '';
     options.fileSuffix (1,:) char = 'Example';
 end
 
@@ -194,9 +195,12 @@ end
 %
 % Saving these with an options string that the user can set to denote the
 % condtions.
+if (isempty(options.rootPath))
+    options.rootPath = getpref('ISETBerkeleyAOTumblingE',dataDir);
+end
 summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
-outputResultsDir = fullfile(ISETBerkeleyAOTumblingERootPath,'local','results',summaryFileName);
-outputFiguresDir =  fullfile(ISETBerkeleyAOTumblingERootPath,'local','figures',summaryFileName);
+outputResultsDir = fullfile(options.rootPath,'local','results',summaryFileName);
+outputFiguresDir =  fullfile(options.rootPath,'local','figures',summaryFileName);
 if (~exist(outputResultsDir,'dir'))
     mkdir(outputResultsDir);
 end
