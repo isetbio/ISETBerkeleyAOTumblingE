@@ -169,35 +169,15 @@ if (options.fastParams)
     options.nTest = 64;
 end
 
-% Make sure figures and results directories exist so that output writes
-% don't fail
-if (options.writeFigures)
-    rootPath = ISETBerkeleyAOTumblingERootPath;
-    if (~exist(fullfile(rootPath,'local','figures'),'dir'))
-        mkdir(fullfile(rootPath,'local','figures'));
-    end
-    
-    % Make sure figures and results directories exist so that output writes
-    % don't fail
-    rootPath = ISETBerkeleyAOTumblingERootPath;
-    if (~exist(fullfile(rootPath,'local','figures'),'dir'))
-        mkdir(fullfile(rootPath,'local','figures'));
-    end
-    if (~exist(fullfile(rootPath,'local','results'),'dir'))
-        mkdir(fullfile(rootPath,'local','results'));
-    end
-
-    outputFiguresDir = fullfile(rootPath, 'local', 'figures');
-    outputResultsDir = fullfile(rootPath, 'local', 'results');
-end
-
-% Set up summary filename and output dir
-%
-% Saving these with an options string that the user can set to denote the
-% condtions.
+%% Set root path unless passed explicitly
 if (isempty(options.rootPath))
     options.rootPath = getpref('ISETBerkeleyAOTumblingE',dataDir);
 end
+
+%% Set up summary filename and output dir
+%
+% Saving these with an options string that the user can set to denote the
+% condtions.
 summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
 outputResultsDir = fullfile(options.rootPath,'local','results',summaryFileName);
 outputFiguresDir =  fullfile(options.rootPath,'local','figures',summaryFileName);
