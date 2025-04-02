@@ -179,7 +179,7 @@ end
 % Saving these with an options string that the user can set to denote the
 % condtions.
 summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
-options.outputResultsDir = fullfile(options.rootPath,results',summaryFileName);
+options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
 options.outputFiguresDir =  fullfile(options.rootPath,'figures',summaryFileName);
 if (~exist(options.outputResultsDir,'dir'))
     mkdir(options.outputResultsDir);
