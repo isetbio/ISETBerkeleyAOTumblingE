@@ -171,7 +171,7 @@ end
 
 %% Set root path unless passed explicitly
 if (isempty(options.rootPath))
-    options.rootPath = getpref('ISETBerkeleyAOTumblingE',dataDir);
+    options.rootPath = getpref('ISETBerkeleyAOTumblingE','dataPath');
 end
 
 %% Set up summary filename and output dir
@@ -179,16 +179,16 @@ end
 % Saving these with an options string that the user can set to denote the
 % condtions.
 summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
-outputResultsDir = fullfile(options.rootPath,'local','results',summaryFileName);
-outputFiguresDir =  fullfile(options.rootPath,'local','figures',summaryFileName);
-if (~exist(outputResultsDir,'dir'))
-    mkdir(outputResultsDir);
+options.outputResultsDir = fullfile(options.rootPath,'local','results',summaryFileName);
+options.outputFiguresDir =  fullfile(options.rootPath,'local','figures',summaryFileName);
+if (~exist(options.outputResultsDir,'dir'))
+    mkdir(options.outputResultsDir);
 end
-if (~exist(outputFiguresDir,'dir'))
-    mkdir(outputFiguresDir);
+if (~exist(options.outputFiguresDir,'dir'))
+    mkdir(options.outputFiguresDir);
 end
-options.scenePdfFileBase = fullfile(outputFiguresDir,'Scene');
-options.visualizeEsFileBase = fullfile(outputFiguresDir,'EsOnMosaic');
+options.scenePdfFileBase = fullfile(options.outputFiguresDir,'Scene');
+options.visualizeEsFileBase = fullfile(options.outputFiguresDir,'EsOnMosaic');
 
 %% Do all the hard work in the CSF generator tutorial function
 %
@@ -198,6 +198,7 @@ for i = 1:numel(fn)
     tutorialOptions.(fn{i}) = options.(fn{i});
 end
 optionsTemp = options;
+optionsTemp = rmfield(optionsTemp,'rootPath')'
 optionsTemp = rmfield(optionsTemp,'writeFigures');
 optionsTemp = rmfield(optionsTemp,'writeSummary');
 optionsTemp = rmfield(optionsTemp,'fileSuffix');
@@ -219,9 +220,8 @@ threshold = 10.^logThreshold;
 %% Print the threshold estimate
 fprintf('Current threshold estimate: %g\n', threshold);
 
-% Plot the derived psychometric function and other things.  The lower
-% level routines put this in ISETBioJandJRootPath/figures.
-pdfFileName = fullfile(outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
+% Plot the psychometric function
+pdfFileName = fullfile(options.outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
 [stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
         thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
 
@@ -272,7 +272,7 @@ fprintf('\n');
 
 % Save summary,  This allows examination of the numbers and/or
 % replotting.
-save(fullfile(outputResultsDir,[summaryFileName '.mat']),'-v7.3');
+save(fullfile(options.outputResultsDir,[summaryFileName '.mat']),'-v7.3');
 
 end
 

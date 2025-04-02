@@ -44,4 +44,4 @@ end
 setpref(projectName,'dropboxPath',baseDir);
 
 % Set project path 
-setpref(projectName,'dataPath',fullfile(baseDir,projectName));
+setpref(projectName,'dataPath',fullfile(baseDir,'IBIO_analysis',projectName));
