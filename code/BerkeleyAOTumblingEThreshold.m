@@ -187,8 +187,8 @@ end
 if (~exist(options.outputFiguresDir,'dir'))
     mkdir(options.outputFiguresDir);
 end
-options.scenePdfFileBase = fullfile(options.outputFiguresDir,'Scene');
-options.visualizeEsFileBase = fullfile(options.outputFiguresDir,'EsOnMosaic');
+options.scenePdfFileBase = fullfile('Scene');
+options.visualizeEsFileBase = fullfile('EsOnMosaic');
 
 %% Do all the hard work in the CSF generator tutorial function
 %
@@ -198,7 +198,7 @@ for i = 1:numel(fn)
     tutorialOptions.(fn{i}) = options.(fn{i});
 end
 optionsTemp = options;
-optionsTemp = rmfield(optionsTemp,'rootPath')'
+optionsTemp = rmfield(optionsTemp,'rootPath')';
 optionsTemp = rmfield(optionsTemp,'writeFigures');
 optionsTemp = rmfield(optionsTemp,'writeSummary');
 optionsTemp = rmfield(optionsTemp,'fileSuffix');
