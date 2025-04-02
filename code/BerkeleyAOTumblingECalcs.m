@@ -49,7 +49,7 @@ foregroundRGB = [0 0 0];
 
 % Set up y shift vectors for each of the three steps
 rawShiftsMinutes = [0 2 4 1];
-nShifts = length(rawShiftsMinutes];
+nShifts = length(rawShiftsMinutes);
 for ss = 1:nShifts
     baseShiftMinutes = rawShiftsMinutes(ss);
     shiftIndex = 1;
