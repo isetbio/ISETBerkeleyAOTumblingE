@@ -40,7 +40,7 @@ stimOnFrames = zeros(1,totalFrames);
 stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 
 % Number of tests to simulate for each condition
-nTest = 512;
+nTest = 1024;
 
 % Background info
 backgroundRGB = [1 0 0];
@@ -48,7 +48,7 @@ backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
 foregroundRGB = [0 0 0];
 
 % Set up y shift vectors for each of the three steps
-rawShiftsMinutes = [0 2 4 1];
+rawShiftsMinutes = [0 1 2 4];
 nShifts = length(rawShiftsMinutes);
 for ss = 1:nShifts
     baseShiftMinutes = rawShiftsMinutes(ss);
@@ -64,7 +64,7 @@ for ss = 1:nShifts
 end
 
 %% Calculations for each filter model and shift, positive y direction shifts
-nReplications = 3;
+nReplications = 8;
 filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
 watsonParams_tau = 12;
 noiseSds = [20 20 20];
@@ -76,7 +76,7 @@ for ss = 1:nShifts
         jitterMinutes(ss) = jitterRangeMinutes*(rand-0.5);
         for rr = 1:nReplications
             for ff = 1:length(filterModels)
-                fileSuffix = sprintf('Calcs_posYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+                fileSuffix = sprintf('Calcs2_posYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
                 fprintf('%s\n',fileSuffix);
                 [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
                     psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
@@ -125,7 +125,7 @@ for ss = 1:nShifts
         jitterMinutes(ss) = jitterRangeMinutes*(rand-0.5);
         for rr = 1:nReplications
             for ff = 1:length(filterModels)
-                fileSuffix = sprintf('Calcs_negYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+                fileSuffix = sprintf('Calcs2_negYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
                 fprintf('%s\n',fileSuffix);
                 [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
                     psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
@@ -174,7 +174,7 @@ for ss = 1:nShifts
         jitterMinutes(ss) = jitterRangeMinutes*(rand-0.5);
         for rr = 1:nReplications
             for ff = 1:length(filterModels)
-                fileSuffix = sprintf('Calcs_posXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+                fileSuffix = sprintf('Calcs2_posXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
                 fprintf('%s\n',fileSuffix);
                 [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
                     psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
@@ -223,7 +223,7 @@ for ss = 1:nShifts
         jitterMinutes(ss) = jitterRangeMinutes*(rand-0.5);
         for rr = 1:nReplications
             for ff = 1:length(filterModels)
-                fileSuffix = sprintf('Calcs_negXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+                fileSuffix = sprintf('Calcs2_negXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
                 fprintf('%s\n',fileSuffix);
                 [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
                     psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
