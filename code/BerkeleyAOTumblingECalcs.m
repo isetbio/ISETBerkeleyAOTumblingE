@@ -7,7 +7,7 @@
 clear; close all;
 
 %% Name
-calcName = 'Calcs';
+calcName = 'Calcs3';
 
 %% Visualization
 visualizeScene = false;
@@ -54,7 +54,7 @@ backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
 foregroundRGB = [0 0 0];
 
 % Set up y shift vectors for each of the three steps
-rawShiftsMinutes = [0 2 4 1];
+rawShiftsMinutes = [0 1 2 4];
 nShifts = length(rawShiftsMinutes);
 for ss = 1:nShifts
     baseShiftMinutes = rawShiftsMinutes(ss);
