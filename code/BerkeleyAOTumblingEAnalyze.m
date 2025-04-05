@@ -6,6 +6,7 @@
 clear; close all;
 
 %% Parameters
+calcName = 'Calcs';
 theShifts = [0 2 4 0.5];
 nShifts = length(theShifts);
 nReplications = 3;
@@ -20,32 +21,33 @@ nEOrientations = length(eOrientations);
 options.rootPath = getpref('ISETBerkeleyAOTumblingE','dataPath');
 %options.outputFiguresDir =  fullfile(options.rootPath,'figures',summaryFileName);
 
+%% Loop over data and read it in
 for ss = 1:nShifts
     for rr = 1:nReplications
         for ff = 1:length(filterModels)
             % Pos Y shift
-            options.fileSuffix = sprintf('Calcs_posYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+            options.fileSuffix = sprintf('%s_posYShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
             options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
             theData{1,ss,rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
                 'options','pCorrect','pRespondAAWithStimBB','tByTPerformance','tByTResponseAlternatives','tByTStimAlternatives');       
 
             % Neg Y shift
-            options.fileSuffix = sprintf('Calcs_negYShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+            options.fileSuffix = sprintf('%s_negYShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
             options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
             theData{2,ss,rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
                 'options','pCorrect','pRespondAAWithStimBB','tByTPerformance','tByTResponseAlternatives','tByTStimAlternatives');       
 
             % Pos X shift
-            options.fileSuffix = sprintf('Calcs_posXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+            options.fileSuffix = sprintf('%s_posXShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
             options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
             theData{3,ss,rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
                 'options','pCorrect','pRespondAAWithStimBB','tByTPerformance','tByTResponseAlternatives','tByTStimAlternatives');       
 
             % Neg X shift
-            options.fileSuffix = sprintf('Calcs_negXShift_%d_Rep_%d_filter_%d',ss,rr,ff);
+            options.fileSuffix = sprintf('%s_negXShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
             options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
             theData{4,ss,rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
@@ -61,6 +63,11 @@ set(gcf,'Position',[100,100,1500,750]);
 set(gca,'FontName','Helvetica','FontSize',14);
 nextMontagePlot = 1;
 
+errorMontageFigure = figure; clf; 
+set(gcf,'Position',[100,100,1500,750]);
+set(gca,'FontName','Helvetica','FontSize',14);
+nextErrorMontagePlot = 1;
+
 summaryFigure = figure; clf; 
 set(gcf,'Position',[100,100,1200,400]);
 set(gca,'FontName','Helvetica','FontSize',14);
@@ -70,9 +77,6 @@ nextSummaryPlot = 1;
 index0 = find(theShifts == 0);
 for ff = 1:nFilterModels
     for dd = 1:nShiftDirections
-        figure(montageFigure);
-        subplot(3,4,nextMontagePlot); hold on;
-
         % Sort out relation between this shift direction and the four E
         % orientations, parallel and perpindicular motion to E bar
         % orientation.
@@ -92,7 +96,9 @@ for ff = 1:nFilterModels
 
         % Get the data organized by shift for this motion direction and filter, averaged over replications
         [meanPCorrectByShift{dd,ff}, semPCorrectByShift{dd,ff}, ...
-            meanPRespondAAWithStimBBByShift{dd,ff}, semPRespondAAWithStimBBByShift{dd,ff}] = ...
+            meanPRespondAAWithStimBBByShift{dd,ff}, semPRespondAAWithStimBBByShift{dd,ff}, ...
+            meanPIncorrectParByShift{dd,ff}, semPIncorrectParByShift{dd,ff}, ...
+            meanPIncorrectPerpByShift{dd,ff},semPIncorrectPerpByShift{dd,ff}] = ...
             GetPCorrectByShift(theData,dd,ff);
 
         %% Get parallel and orthogonal pCorrect
@@ -123,6 +129,9 @@ for ff = 1:nFilterModels
         end
     
         % Make plot for this direction and filter and add to the  montage
+        figure(montageFigure);
+        subplot(3,4,nextMontagePlot); hold on;
+
         parh = errorbar(theShifts(index),parMeanPCorrectByShift{dd,ff}(index)/parMeanPCorrectByShift{dd,ff}(index0), ...
             parSemPCorrectByShift{dd,ff}(index)/parMeanPCorrectByShift{dd,ff}(index0),'o');
             parh.Color = theColors(1,:);
@@ -145,6 +154,22 @@ for ff = 1:nFilterModels
 
         % Move to next subplot
         nextMontagePlot = nextMontagePlot + 1;
+
+        % Error analysis figure
+        figure(errorMontageFigure);
+        subplot(3,4,nextErrorMontagePlot); hold on;
+        plot(theShifts(index),meanPIncorrectParByShift{dd,ff}(index), ...
+            '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
+        plot(theShifts(index),2*meanPIncorrectPerpByShift{dd,ff}(index), ...
+            '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
+
+        xlim([0 5]);
+        ylim([0 0.4]);
+        xlabel('Shift Per Frame (minutes)','FontSize',14);
+        ylabel({'Probability Correct' ; '(normalized)'},'FontSize',14);
+        title({sprintf('Filter: %s',filterModels{ff}) ;  sprintf('Shift Direction; %d)',shiftDirections(dd))},'FontSize',16);
+     
+        nextErrorMontagePlot = nextErrorMontagePlot + 1;
     end
 
     % Get average performance over directions
@@ -187,7 +212,9 @@ end
 
 %% Get pCorrect and other wonderful things as a function base shift
 function [meanPCorrectByShift, semPCorrectByShift, ...
-    meanPRespondAAWithStimBBByShift, semPRespondAAWithStimBBByShift] = ...
+    meanPRespondAAWithStimBBByShift, semPRespondAAWithStimBBByShift, ...
+    meanPIncorrectParByShift, semPIncorrectParByShift, ...
+    meanPIncorrectPerpByShift,semPIncorrectPerpByShift] = ...
     GetPCorrectByShift(theData,whichShiftDirection,whichFilter)
 
     % Get number of filters and replications
@@ -200,7 +227,12 @@ function [meanPCorrectByShift, semPCorrectByShift, ...
     semPCorrectByShift = zeros(1,nShifts);
     meanPRespondAAWithStimBBByShift = zeros(nEOrientations,nEOrientations,nShifts);
     semPRespondAAWithStimBBByShift = zeros(nEOrientations,nEOrientations,nShifts);
+    meanPIncorrectParByShift = zeros(1,nShifts);
+    semPIncorrectParByShift = zeros(1,nShifts);
+    meanPIncorrectPerpByShift = zeros(1,nShifts);
+    semPIncorrectPerpByShift = zeros(1,nShifts);
 
+    % Sanity check
     if (size(theData{whichShiftDirection,1,1,whichFilter}.pRespondAAWithStimBB,1) ~= nEOrientations | ...
         size(theData{whichShiftDirection,1,1,whichFilter}.pRespondAAWithStimBB,2) ~= nEOrientations)
         errorr('Saved confusion matrix is not the expected size');
@@ -221,6 +253,24 @@ function [meanPCorrectByShift, semPCorrectByShift, ...
         semPCorrectByShift(ss) = std(pCorrectByShiftTemp)/sqrt(nReplications);
         meanPRespondAAWithStimBBByShift(:,:,ss) = mean(pRespondAAWithStimBBByShiftTemp,3);
         semPRespondAAWithStimBBByShift(:,:,ss) = std(pRespondAAWithStimBBByShiftTemp,[],3);
+
+        pIncorrectByShiftTemp = [];
+        for zz = [2 4]
+            pIncorrectByShiftTemp = [pIncorrectByShiftTemp ; diag(meanPRespondAAWithStimBBByShift(:,:,ss),zz)];
+            pIncorrectByShiftTemp = [pIncorrectByShiftTemp ; diag(meanPRespondAAWithStimBBByShift(:,:,ss),-zz)];
+        end
+        meanPIncorrectParByShift(ss) = mean(pIncorrectByShiftTemp);
+        semPIncorrectParByShift = std(pIncorrectByShiftTemp)/length(pIncorrectByShiftTemp);
+
+        pIncorrectByShiftTemp = [];
+        for zz = [1 3]
+            pIncorrectByShiftTemp = [pIncorrectByShiftTemp ; diag(meanPRespondAAWithStimBBByShift(:,:,ss),zz)];
+            pIncorrectByShiftTemp = [pIncorrectByShiftTemp ; diag(meanPRespondAAWithStimBBByShift(:,:,ss),-zz)];
+        end
+        meanPIncorrectPerpByShift(ss) = mean(pIncorrectByShiftTemp);
+        semPIncorrectPerpByShift = std(pIncorrectByShiftTemp)/length(pIncorrectByShiftTemp);
+
+        % Sanity check
         if (abs(meanPCorrectByShift(ss) - mean(diag(meanPRespondAAWithStimBBByShift(:,:,ss)))) > 1e-10)
             error('Inconsistent accounting of responses');
         end
