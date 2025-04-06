@@ -7,7 +7,7 @@
 clear; close all;
 
 %% Name
-calcName = 'Calcs4';
+calcName = 'Calcs5';
 
 %% Visualization
 visualizeScene = false;
@@ -73,20 +73,18 @@ end
 %% Calculations for each filter model and shift, positive y direction shifts
 nReplications = 8;
 filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
+nFilterModels = length(filterModels);
 watsonParams_tau = 12;
 noiseSds = [20 20 20];
 jitterRangeMinutes = 2;
 for ss = 1:nShifts
-    for rr = 1:nReplications
+    parfor rr = 1:nReplications
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
-        for ff = 1:length(filterModels)
+        for ff = 1:nFilterModels
             fileSuffix = sprintf('%s_posYShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             fprintf('%s\n',fileSuffix);
-            [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
-                psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
-                trialByTrialStimulusAlternatives{ss,rr,ff},trialByTrialPerformancePhotocurrent{ss,rr,ff}] = ...
-                BerkeleyAOTumblingEThreshold( ...
+            BerkeleyAOTumblingEThreshold( ...
                 'fastParams', false, ...
                 'rngSeed', 0, ...
                 'eccDegs', eccDegs, ...
@@ -113,27 +111,19 @@ for ss = 1:nShifts
                 'visualizeEsWhichFrames', offFramesStart+1, ...
                 'fileSuffix', fileSuffix, ...
                 'validationThresholds',[]);
-
-            % Thus counts on us only studying one letter size, which is
-            % enforced by the options in the call above.
-            keys = psychometricFunction{ss,rr,ff}.keys;
-            pCorrect(ss,rr,ff) = psychometricFunction{ss,rr,ff}(keys{1});
         end
     end
 end
 
 % Neg y shift
 for ss = 1:nShifts
-    for rr = 1:nReplications
+    parfor rr = 1:nReplications
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
-        for ff = 1:length(filterModels)
+        for ff = 1:nFilterModels
             fileSuffix = sprintf('%s_negYShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             fprintf('%s\n',fileSuffix);
-            [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
-                psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
-                trialByTrialStimulusAlternatives{ss,rr,ff},trialByTrialPerformancePhotocurrent{ss,rr,ff}] = ...
-                BerkeleyAOTumblingEThreshold( ...
+            BerkeleyAOTumblingEThreshold( ...
                 'fastParams', false, ...
                 'rngSeed', 0, ...
                 'eccDegs', eccDegs, ...
@@ -160,27 +150,19 @@ for ss = 1:nShifts
                 'visualizeEsWhichFrames', offFramesStart+1, ...
                 'fileSuffix', fileSuffix, ...
                 'validationThresholds',[]);
-
-            % Thus counts on us only studying one letter size, which is
-            % enforced by the options in the call above.
-            keys = psychometricFunction{ss,rr,ff}.keys;
-            pCorrect(ss,rr,ff) = psychometricFunction{ss,rr,ff}(keys{1});
         end
     end
 end
 
 % Pos x shift
 for ss = 1:nShifts
-    for rr = 1:nReplications
+    parfor rr = 1:nReplications
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
-        for ff = 1:length(filterModels)
+        for ff = 1:nFilterModels
             fileSuffix = sprintf('%s_posXShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             fprintf('%s\n',fileSuffix);
-            [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
-                psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
-                trialByTrialStimulusAlternatives{ss,rr,ff},trialByTrialPerformancePhotocurrent{ss,rr,ff}] = ...
-                BerkeleyAOTumblingEThreshold( ...
+            BerkeleyAOTumblingEThreshold( ...
                 'fastParams', false, ...
                 'rngSeed', 0, ...
                 'eccDegs', eccDegs, ...
@@ -207,27 +189,19 @@ for ss = 1:nShifts
                 'visualizeEsWhichFrames', offFramesStart+1, ...
                 'fileSuffix', fileSuffix, ...
                 'validationThresholds',[]);
-
-            % Thus counts on us only studying one letter size, which is
-            % enforced by the options in the call above.
-            keys = psychometricFunction{ss,rr,ff}.keys;
-            pCorrect(ss,rr,ff) = psychometricFunction{ss,rr,ff}(keys{1});
         end
     end
 end
 
 % Neg x shift
 for ss = 1:nShifts
-    for rr = 1:nReplications
+    parfor rr = 1:nReplications
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
-        for ff = 1:length(filterModels)
+        for ff = 1:nFilterModels
             fileSuffix = sprintf('%s_negXShift_%d_Rep_%d_filter_%d',calcName,ss,rr,ff);
             fprintf('%s\n',fileSuffix);
-            [logThreshold(ss,rr,ff), logMAR(ss,rr,ff), questObj{ss,rr,ff}, ...
-                psychometricFunction{ss,rr,ff}, fittedPsychometricParamsParams{ss,rr,ff}, ...
-                trialByTrialStimulusAlternatives{ss,rr,ff},trialByTrialPerformancePhotocurrent{ss,rr,ff}] = ...
-                BerkeleyAOTumblingEThreshold( ...
+            BerkeleyAOTumblingEThreshold( ...
                 'fastParams', false, ...
                 'rngSeed', 0, ...
                 'eccDegs', eccDegs, ...
@@ -254,11 +228,6 @@ for ss = 1:nShifts
                 'visualizeEsWhichFrames', offFramesStart+1, ...
                 'fileSuffix', fileSuffix, ...
                 'validationThresholds',[]);
-
-            % Thus counts on us only studying one letter size, which is
-            % enforced by the options in the call above.
-            keys = psychometricFunction{ss,rr,ff}.keys;
-            pCorrect(ss,rr,ff) = psychometricFunction{ss,rr,ff}(keys{1});
         end
     end
 end
