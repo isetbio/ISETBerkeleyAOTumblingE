@@ -84,6 +84,10 @@ arguments
     options.visualizeEsOnMosaic (1,1) logical = false;
     options.visualizeEsWhichFrames (1,:) double = 1;
     options.visualizeScene (1,1) logical = true;
+    options.visualizeEachResponse (1,1) logical = false;
+    options.responseVisualizationFunction = [];
+    options.maxVisualizedNoisyResponseInstances = 1;
+    options.maxVisualizedNoisyResponseInstanceStimuli = 1;
 
     % Wavelength support
     options.wave (:,1) double = (500:5:870)';
@@ -225,7 +229,6 @@ fprintf('Current threshold estimate: %g\n', threshold);
 pdfFileName = fullfile(options.outputFiguresDir,sprintf('Performance_Reps_%d.pdf', options.nTest));
 [stimulusLevels, pCorrect] = plotPsychometricFunction(questObj, threshold, fittedPsychometricParams, ...
         thresholdPara, pdfFileName, 'xRange', [options.minLetterSizeMinutes/60  options.maxLetterSizeMinutes/60]);
-
 
 % Trial by trial data template
 stimKeys = trialByTrialStimulusAlternatives.keys;
