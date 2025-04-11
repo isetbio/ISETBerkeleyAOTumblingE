@@ -86,6 +86,7 @@ arguments
     options.visualizeScene (1,1) logical = true;
     options.visualizeEachResponse (1,1) logical = false;
     options.responseVisualizationFunction = [];
+    options.responseVideoFileName(1,:) char = '';
     options.maxVisualizedNoisyResponseInstances = 1;
     options.maxVisualizedNoisyResponseInstanceStimuli = 1;
 
