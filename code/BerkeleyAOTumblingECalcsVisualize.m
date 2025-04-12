@@ -14,7 +14,7 @@ visualizeScene = true;
 visualizeEsOnMosaic = false;
 visualizeEachResponse =  true;
 responseVisualizationFunction = @nreVisualizeCMosaic;
-maxVisualizedNoisyResponseInstances = 1;
+maxVisualizedNoisyResponseInstances = 8;
 maxVisualizedNoisyResponseInstanceStimuli = 4;
 
 %% Parameters
