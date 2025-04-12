@@ -51,7 +51,7 @@ stimOnFrames = zeros(1,totalFrames);
 stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 
 % Number of tests to simulate for each condition
-nTest = 2048;
+nTest = 12;
 
 % Background info
 backgroundRGB = [1 0 0];
@@ -79,7 +79,7 @@ nReplications = 1;
 filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
 nFilterModels = length(filterModels);
 watsonParams_tau = 12;
-noiseSds = [20 20 20];
+noiseSds = [2 2 2];
 jitterRangeMinutes = 2;
 for ss = 1:nShifts
     for rr = 1:nReplications
