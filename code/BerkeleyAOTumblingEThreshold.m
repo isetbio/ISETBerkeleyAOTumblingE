@@ -1,5 +1,5 @@
 function [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, ...
-    trialByTrialStimulusAlternatives,trialByTrialPerformance] = BerkeleyAOTumblingEThreshold(options)
+    trialByTrialStimulusAlternatives,trialByTrialPerformance,theNeuralEngine] = BerkeleyAOTumblingEThreshold(options)
 
 % Examples:
 %{
@@ -218,7 +218,7 @@ tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
 
 % Do the hard work
 [logThreshold, logMAR, questObj, psychometricFunction, fittedPsychometricParams, thresholdPara, ...
-    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialWhichResponses] = ...
+    trialByTrialStimulusAlternatives, trialByTrialPerformance, trialByTrialWhichResponses,theNeuralEngine] = ...
     t_BerkeleyAOTumblingEThreshold(tutorialOptionsCell{:});
 threshold = 10.^logThreshold;
 
