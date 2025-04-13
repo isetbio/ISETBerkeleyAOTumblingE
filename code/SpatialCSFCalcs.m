@@ -9,8 +9,7 @@ clear; close all;
 options.rootPath = getpref('ISETBerkeleyAOTumblingE','dataPath');
 
 %% Visualization
-visualizeScene = true;
-visualizeEsOnMosaic = false;
+visualizeEachScene = true;
 visualizeEachResponse =  true;
 responseVisualizationFunction = @nreVisualizeCMosaic;
 maxVisualizedNoisyResponseInstances = 8;
