@@ -222,7 +222,6 @@ tutorialOptionsCell = [fieldnames(optionsTemp) , struct2cell(optionsTemp)]';
     t_BerkeleyAOTumblingEThreshold(tutorialOptionsCell{:});
 threshold = 10.^logThreshold;
 
-
 %% Print the threshold estimate
 fprintf('Current threshold estimate: %g\n', threshold);
 
