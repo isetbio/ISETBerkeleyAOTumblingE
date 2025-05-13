@@ -49,10 +49,10 @@ stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 % Number of tests to simulate for each condition
 %
 % Must be evenly dividable by number of conditions, here 64
-nTest = 2048;
+nTest = 6400;
 
 % Background info
-backgroundRGB = [1 0 0];
+backgroundRGB = [1 0 0];ß
 backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
 foregroundRGB = [0 0 0];
 
@@ -97,10 +97,10 @@ for dd = 1:nShiftDirections
 end
 
 %% Calculations for each filter model and shift, positive y direction shifts
-% nReplications = 8;
-% filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
-nReplications = 1;
-filterModels = {[]};
+nReplications = 8;
+filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
+% nReplications = 1;
+% filterModels = {[]};
 nFilterModels = length(filterModels);
 watsonParams_tau = 12;
 noiseSds = [20 20 20];
