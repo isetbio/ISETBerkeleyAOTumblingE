@@ -66,8 +66,8 @@ for ss = 1:nShifts
             shiftIndex = shiftIndex + 1;
         end
     end
-    theShift{ss} = zeros(1,totalFrames);
-    theShift{ss}(offFramesStart+1:offFramesStart+onFrames) = theShiftOn{ss};
+    theShifts{ss} = zeros(1,totalFrames);
+    theShifts{ss}(offFramesStart+1:offFramesStart+onFrames) = theShiftOn{ss};
 end
 
 %% Shift directions
@@ -77,17 +77,17 @@ for dd = 1:nShiftDirections
     for ss = 1:nShifts
         switch shiftDirectionNames{dd}
             case 'posYShift'
-                theShiftsX{dd}{ss} = ones(1,totalFrames);
-                theShiftsY{dd}{ss} = theShifts{ss};
+                theShiftsX{dd,ss} = ones(1,totalFrames);
+                theShiftsY{dd,ss} = theShifts{ss};
             case 'negYShift'
-                theShiftsX{dd}{ss} = ones(1,totalFrames);
-                theShiftsY{dd}{ss} = -theShifts{ss};
+                theShiftsX{dd,ss} = ones(1,totalFrames);
+                theShiftsY{dd,ss} = -theShifts{ss};
             case 'posXShift'
-                theShiftsX{dd}{ss} = theShifts{ss};
-                theShiftsY{dd}{ss} = ones(1,totalFrames);
+                theShiftsX{dd,ss} = theShifts{ss};
+                theShiftsY{dd,ss} = ones(1,totalFrames);
             case 'negXShift'
-                theShiftsX{dd}{ss} = -theShifts{ss};
-                theShiftsY{dd}{ss} = ones(1,totalFrames);
+                theShiftsX{dd,ss} = -theShifts{ss};
+                theShiftsY{dd,ss} = ones(1,totalFrames);
             otherwise
                 error('Unknown shift direction name');
         end
@@ -115,9 +115,11 @@ for ff = 1:nFilterModels
                     'eccDegs', eccDegs, ...
                     'chromaSpecification_backgroundRGB', [1 0 0], ...
                     'chromaSpecification_foregroundRGB', [0 0 0], ...
+                    'jitterMinutesX', jitterMinutesX, ...
+                    'jitterMinutesY', jitterMinutesY, ...
                     'temporalModulationParams_numFrame', totalFrames, ...
-                    'temporalModulationParams_xShiftPerFrameMin', theShiftsX{dd}{ss} + jitterMinutesX, ...
-                    'temporalModulationParams_yShiftPerFrameMin', theShiftsY{dd}{ss} + jitterMinutesY, ...
+                    'temporalModulationParams_xShiftPerFrameMin', { theShiftsX{dd,ss} }, ...
+                    'temporalModulationParams_yShiftPerFrameMin', { theShiftsY{dd,ss} }, ...
                     'temporalModulationParams_backgroundRGBPerFrame', backgroundRGBPerFrame, ...
                     'temporalModulationParams_stimOnFrames', stimOnFrames, ...
                     'temporalModulationParams_frameRateHz', temporalFrequencyHz , ...
