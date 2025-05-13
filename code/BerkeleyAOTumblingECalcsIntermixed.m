@@ -47,6 +47,8 @@ stimOnFrames = zeros(1,totalFrames);
 stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 
 % Number of tests to simulate for each condition
+%
+% Must be evenly dividable by number of conditions, here 64
 nTest = 2048;
 
 % Background info
