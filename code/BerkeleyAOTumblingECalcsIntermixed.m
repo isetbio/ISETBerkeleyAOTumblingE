@@ -52,7 +52,7 @@ stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 nTest = 6400;
 
 % Background info
-backgroundRGB = [1 0 0];ß
+backgroundRGB = [1 0 0];
 backgroundRGBPerFrame = backgroundRGB(ones(totalFrames,1),:);
 foregroundRGB = [0 0 0];
 
