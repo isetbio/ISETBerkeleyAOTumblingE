@@ -79,17 +79,17 @@ for dd = 1:nShiftDirections
     for ss = 1:nShifts
         switch shiftDirectionNames{dd}
             case 'posYShift'
-                theShiftsX{dd,ss} = ones(1,totalFrames);
+                theShiftsX{dd,ss} = zeros(1,totalFrames);
                 theShiftsY{dd,ss} = theShifts{ss};
             case 'negYShift'
-                theShiftsX{dd,ss} = ones(1,totalFrames);
+                theShiftsX{dd,ss} = zeros(1,totalFrames);
                 theShiftsY{dd,ss} = -theShifts{ss};
             case 'posXShift'
                 theShiftsX{dd,ss} = theShifts{ss};
-                theShiftsY{dd,ss} = ones(1,totalFrames);
+                theShiftsY{dd,ss} = zeros(1,totalFrames);
             case 'negXShift'
                 theShiftsX{dd,ss} = -theShifts{ss};
-                theShiftsY{dd,ss} = ones(1,totalFrames);
+                theShiftsY{dd,ss} = zeros(1,totalFrames);
             otherwise
                 error('Unknown shift direction name');
         end

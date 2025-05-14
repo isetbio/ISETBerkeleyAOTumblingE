@@ -256,9 +256,6 @@ for i = 1:length(stimKeys)
 
     % Get confusion matrix
     nAlternatives = length(unique(tByTStimAlternatives));
-    if (nAlternatives ~= 4)
-        error('Should have four alternatives');
-    end
     pRespondAAWithStimBB = zeros(nAlternatives,nAlternatives);
     for aa = 1:nAlternatives
         for bb = 1:nAlternatives
