@@ -7,7 +7,7 @@
 clear; close all;
 
 %% Name
-calcName = 'Calcs5Intermixed';
+calcName = 'Calcs5';
 
 %% Visualization
 visualizeScene = false;
@@ -74,8 +74,8 @@ end
 
 %% Shift directions
 shiftDirectionNames = {'posYShift' 'negYShift' 'posXShift' 'negXShift'};
-nShiftDirections = length(shiftDirectionNames);
-for dd = 1:nShiftDirections
+nDirections = length(shiftDirectionNames);
+for dd = 1:nDirections
     for ss = 1:nShifts
         switch shiftDirectionNames{dd}
             case 'posYShift'
@@ -106,7 +106,7 @@ watsonParams_tau = 12;
 noiseSds = [20 20 20];
 jitterRangeMinutes = 2;
 %parfor rr = 1:nReplications
-for rr = 1:nReplications
+for rr = 3:nReplications
     for ff = 1:nFilterModels
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
