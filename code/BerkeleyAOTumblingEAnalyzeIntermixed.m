@@ -5,6 +5,9 @@
 %% Clear
 clear; close all;
 
+%% Verbose
+verbose = true;
+
 %% Parameters
 %
 % These need to match up with those used at calculation time.
@@ -12,11 +15,11 @@ calcName = 'Calcs5Intermixed';
 theShifts = [0 1 2 4];
 nShifts = length(theShifts);
 nReplications = 1;
-%filterModels = {[], 'Photocurrent', 'Watson w/ Adaptation'};
-filterModels = {[]};
+filterModels = {[], 'Photocurrent', 'Watson w/ Adaptation'};
+%filterModels = {[]};
 nFilterModels = length(filterModels);
 shiftDirections = [90 270 0 180];
-nShiftDirections = length(shiftDirections);
+nDirections = length(shiftDirections);
 eOrientations = [0 90 180 270];
 nEOrientations = length(eOrientations);
 
@@ -34,15 +37,56 @@ for rr = 1:nReplications
         theData{rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
             'options','pCorrect','pRespondAAWithStimBB','tByTPerformance','tByTResponseAlternatives','tByTStimAlternatives');
 
+        % For debugging, show confusion matrix
+        if (verbose)
+            figure; imagesc(theData{rr,ff}.pRespondAAWithStimBB);
+            axis('square');
+            title('original');
+        end
+
+        % Handle 0 motion versus direction ambiguity.  0 motion is the same
+        % in all directions, so the confusions need to be redistributed.
+        % Assume, with some trepidation, that first shift is 0.  We map all
+        % the zero motion alternatives to the first four alternative
+        % numbers.
+        nAlternatives = length(unique(theData{rr,ff}.tByTStimAlternatives));
+        zeroMotionIndicesBase = [1 2 3 4];
+        for zz = 2:nDirections
+            for mm = 1:length(zeroMotionIndicesBase)
+                index = find(theData{rr,ff}.tByTStimAlternatives == zeroMotionIndicesBase(mm) + (zz-1)*nShifts*nEOrientations);
+                theData{rr,ff}.tByTStimAlternatives(index) = zeroMotionIndicesBase(mm);
+                index = find(theData{rr,ff}.tByTResponseAlternatives == zeroMotionIndicesBase(mm) + (zz-1)*nShifts*nEOrientations);
+                theData{rr,ff}.tByTResponseAlternatives(index) = zeroMotionIndicesBase(mm);
+            end
+        end
+        theData{rr,ff}.tByTPerformance  = double(theData{rr,ff}.tByTStimAlternatives == theData{rr,ff}.tByTResponseAlternatives);
+        theData{rr,ff}.pRespondAAWithStimBB = zeros(nAlternatives,nAlternatives);
+        for aa = 1:nAlternatives
+            for bb = 1:nAlternatives
+                % if (bb ==33)
+                %     disp('yes');
+                % end
+                index = find(theData{rr,ff}.tByTStimAlternatives == bb);
+                if (~isempty(index))
+                    theData{rr,ff}.pRespondAAWithStimBB(aa,bb) = sum(theData{rr,ff}.tByTResponseAlternatives(index) == aa)/length(index);
+                end
+            end
+        end
+        if (verbose)
+            figure; imagesc(theData{rr,ff}.pRespondAAWithStimBB);
+            axis('square');
+            title('0 shift fix');
+        end
+
         % Map alternatives down from N to 4 (for E direction)
         theData{rr,ff}.tByTStimAlternativesMappedToE = rem(theData{rr,ff}.tByTStimAlternatives-1,4)+1;
         theData{rr,ff}.tByTResponseAlternativesMappedToE = rem(theData{rr,ff}.tByTResponseAlternatives-1,4)+1;
 
         % Get confusion matrix
-        nAlternatives = length(unique(theData{rr,ff}.tByTStimAlternativesMappedToE));
-        pRespondAAWithStimBB = zeros(nAlternatives,nAlternatives);
-        for aa = 1:nAlternatives
-            for bb = 1:nAlternatives
+        nAlternativesE = length(unique(theData{rr,ff}.tByTStimAlternativesMappedToE));
+        pRespondAAWithStimBB = zeros(nAlternativesE,nAlternativesE);
+        for aa = 1:nAlternativesE
+            for bb = 1:nAlternativesE
                 index = find(theData{rr,ff}.tByTStimAlternativesMappedToE== bb);
                 theData{rr,ff}.pRespondAAWithStimBBMappedToE(aa,bb) = sum(theData{rr,ff}.tByTResponseAlternativesMappedToE (index) == aa)/length(index);
             end
@@ -83,7 +127,7 @@ end
 [~,index] = sort(theShifts);
 index0 = find(theShifts == 0);
 for ff = 1:nFilterModels
-    for dd = 1:nShiftDirections
+    for dd = 1:nDirections
         % Sort out relation between this shift direction and the four E
         % orientations, parallel and perpindicular motion to E bar
         % orientation.
@@ -106,7 +150,7 @@ for ff = 1:nFilterModels
             meanPRespondAAWithStimBBByShift{dd,ff}, semPRespondAAWithStimBBByShift{dd,ff}, ...
             meanPIncorrect180DegByOrientationByShift{dd,ff}, ...
             meanPIncorrect90DegByOrientationByShift{dd,ff}] = ...
-            GetPCorrectByShift(theData,dd,ff,nDirections,nShifts);
+            GetPCorrectByShift(theData,dd,ff);
         meanPIncorrect180DegByShift{dd,ff} = sum(meanPIncorrect180DegByOrientationByShift{dd,ff},1);
         meanPIncorrect90DegByShift{dd,ff} = sum(meanPIncorrect90DegByOrientationByShift{dd,ff},1);
 
@@ -206,16 +250,16 @@ for ff = 1:nFilterModels
     end
 
     % Get average performance over directions
-    parMeanPCorrectByShiftByDirection{ff} = zeros(nShifts,nShiftDirections);
-    perpMeanPCorrectByShiftByDirection{ff} = zeros(nShifts,nShiftDirections);
-    for dd = 1:nShiftDirections
+    parMeanPCorrectByShiftByDirection{ff} = zeros(nShifts,nDirections);
+    perpMeanPCorrectByShiftByDirection{ff} = zeros(nShifts,nDirections);
+    for dd = 1:nDirections
         parMeanPCorrectByShiftByDirection{ff}(:,dd) = parMeanPCorrectByShift{dd,ff};
         perpMeanPCorrectByShiftByDirection{ff}(:,dd) = perpMeanPCorrectByShift{dd,ff};
     end
     parMeanPCorrectByShiftMeanOverDirection{ff} = mean(parMeanPCorrectByShiftByDirection{ff},2);
     perpMeanPCorrectByShiftMeanOverDirection{ff} = mean(perpMeanPCorrectByShiftByDirection{ff},2);
-    parMeanPCorrectByShiftSemOverDirection{ff} = std(parMeanPCorrectByShiftByDirection{ff},[],2)/sqrt(nShiftDirections);
-    perpMeanPCorrectByShiftSemOverDirection{ff} = std(perpMeanPCorrectByShiftByDirection{ff},[],2)/sqrt(nShiftDirections);
+    parMeanPCorrectByShiftSemOverDirection{ff} = std(parMeanPCorrectByShiftByDirection{ff},[],2)/sqrt(nDirections);
+    perpMeanPCorrectByShiftSemOverDirection{ff} = std(perpMeanPCorrectByShiftByDirection{ff},[],2)/sqrt(nDirections);
 
     % Make plot for this  filter and add to the  montage
     % This version normalized
@@ -305,7 +349,7 @@ end
 function [meanPCorrectByShift, semPCorrectByShift, ...
     meanPRespondAAWithStimBBByShift, semPRespondAAWithStimBBByShift, ...
     meanPIncorrect180DegByOrientationByShift, meanPIncorrect90DegByOrientationByShift] = ...
-    GetPCorrectByShift(theData,whichShiftDirection,whichFilter)
+    GetPCorrectByShift(theData,whichDirection,whichFilter)
 
 % We really count on this being 4 in this routine.
 % Don't change without thinking hard.
@@ -332,9 +376,15 @@ meanPIncorrect90DegByOrientationByShift = zeros(1,nShifts);
 nPerDirection = nEOrientations*nShifts;
 
 % Get variables sorted out by direction and shift
-for dd = 1:nDirections
-    thisDirectionIndex = (dd-1)*nPerDirection + 1:dd*nPerDirection;
-    for ss = 1:nShifts
+for rr = 1:nReplications
+    for dd = 1:nDirections
+        directionIndex = (dd-1)*nPerDirection + 1:dd*nPerDirection;
+        tempPRespondAAWithStimBB1 = theData{rr,whichFilter}.pRespondAAWithStimBB(directionIndex,directionIndex);
+        for ss = 1:nShifts
+            shiftIndex = (ss-1)*nPerDirection + 1:ss*nPerDirection;
+            tempPRespondAAWithStimBB2 = tempPRespondAAWithStimBB1(shiftIndex,shiftIndex);
+            pRespondAAWithStimBBByShift{dd,ss,rr} = tempPRespondAAWithStimBB2;
+        end
     end
 end
 
@@ -346,7 +396,7 @@ for ss = 1:nShifts
     pCorrectByShiftTemp = zeros(1,nReplications);
     pRespondAAWithStimBBByShiftTemp = zeros(nEOrientations,nEOrientations,nReplications);
     for rr = 1:nReplications
-        pRespondAAWithStimBBByShiftTemp(:,:,rr) = theData{whichShiftDirection,ss,rr,whichFilter}.pRespondAAWithStimBB;
+        pRespondAAWithStimBBByShiftTemp(:,:,rr) = theData{whichDirection,ss,rr,whichFilter}.pRespondAAWithStimBB;
         if (abs( pCorrectByShiftTemp(rr)) ~= mean(diag(pRespondAAWithStimBBByShiftTemp(:,:,rr))) > 1e-10)
             error('Inconsistent accounting of responses');
         end
