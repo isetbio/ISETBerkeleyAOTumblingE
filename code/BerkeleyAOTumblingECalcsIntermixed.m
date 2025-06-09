@@ -1,4 +1,4 @@
-% BerkeleyAOTumblingECalcs
+% BerkeleyAOTumblingECalcsIntermixed
 %
 % Code that models Tuten AO stabilized and not tumbling E experiment.
 % This sets up options to match the experiment and runs the calculations.
@@ -7,7 +7,7 @@
 clear; close all;
 
 %% Name
-calcName = 'Calcs5';
+calcName = 'Calcs6';
 
 %% Visualization
 visualizeScene = false;
@@ -49,7 +49,7 @@ stimOnFrames(offFramesStart+1:offFramesStart+onFrames) = ones(1,onFrames);
 % Number of tests to simulate for each condition
 %
 % Must be evenly dividable by number of conditions, here 64
-nTest = 6400;
+nTest = 12800;
 
 % Background info
 backgroundRGB = [1 0 0];
@@ -97,16 +97,16 @@ for dd = 1:nDirections
 end
 
 %% Calculations for each filter model and shift, positive y direction shifts
-nReplications = 8;
+nReplications = 16;
 filterModels = {[], 'photocurrentImpulseResponseBased', 'watsonFilter'};
 % nReplications = 1;
 % filterModels = {[]};
 nFilterModels = length(filterModels);
 watsonParams_tau = 12;
 noiseSds = [20 20 20];
-jitterRangeMinutes = 2;
+jitterRangeMinutes = 3;
 %parfor rr = 1:nReplications
-for rr = 3:nReplications
+for rr = 1:nReplications
     for ff = 1:nFilterModels
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
