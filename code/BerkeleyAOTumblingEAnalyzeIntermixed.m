@@ -264,34 +264,34 @@ for ff = 1:nFilterModels
     legendStr = {};
     nextLegend = 1;
 
-    parh = errorbar(theShifts,grandMeanPCorrectPar{ff}, ...
+    parh = errorbar(theShifts/2,grandMeanPCorrectPar{ff}, ...
         semMeanPCorrectPar{ff},'o');
     parh.Color = theColors(1,:);
     parh.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPCorrectPar{ff}, ...
+    plot(theShifts/2,grandMeanPCorrectPar{ff}, ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
     legendStr{nextLegend} = 'Parallel'; nextLegend = nextLegend + 1;
 
-    perph = errorbar(theShifts,grandMeanPCorrectPerp{ff}, ...
+    perph = errorbar(theShifts/2,grandMeanPCorrectPerp{ff}, ...
         semMeanPCorrectPerp{ff},'o');
     perph.Color = theColors(2,:);
     perph.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPCorrectPerp{ff}, ...
+    plot(theShifts/2,grandMeanPCorrectPerp{ff}, ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
     legendStr{nextLegend} = 'Orthogonal'; nextLegend = nextLegend + 1;
 
     % Add the sum
-    plot(theShifts,grandMeanPCorrect{ff}, ...
+    plot(theShifts/2,grandMeanPCorrect{ff}, ...
         'k:','LineWidth',2);
     legendStr{nextLegend} = 'Both'; nextLegend = nextLegend + 1;
 
     % Tidy up
-    xlim([0 5]);
+    xlim([0 5]/2);
     ylim([0 0.5]);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
-    xlabel('Shift Per Frame (min)');
+    xlabel('Imposed Motion (Bar Width/Frame');
     ylabel('Raw Fraction Correct')
     title(sprintf('Filter: %s',filterModels{ff}));
     nextSummaryPlotRaw = nextSummaryPlotRaw + 1;
@@ -302,33 +302,33 @@ for ff = 1:nFilterModels
     legendStr = {};
     nextLegend = 1;
 
-    parh = errorbar(theShifts,grandMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0), ...
+    parh = errorbar(theShifts/2,grandMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0), ...
         semMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0),'o');
     parh.Color = theColors(1,:);
     parh.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0), ...
+    plot(theShifts/2,grandMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0), ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
     legendStr{nextLegend} = 'Parallel'; nextLegend = nextLegend + 1;
 
-    perph = errorbar(theShifts,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
+    perph = errorbar(theShifts/2,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
         semMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0),'o');
     perph.Color = theColors(2,:);
     perph.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
+    plot(theShifts/2,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
     legendStr{nextLegend} = 'Orthogonal'; nextLegend = nextLegend + 1;
 
     % Add the normalized average
-    plot(theShifts,grandMeanPCorrect{ff}/grandMeanPCorrect{ff}(index0), ...
+    plot(theShifts/2,grandMeanPCorrect{ff}/grandMeanPCorrect{ff}(index0), ...
         'k:','LineWidth',2);
     legendStr{nextLegend} = 'Average'; nextLegend = nextLegend + 1;
 
     % Tidy up
-    xlim([0 5]);
+    xlim([0 5]/2);
     ylim([0.7 1.1]);
-    xlabel('Shift Per Frame (minutes)','FontSize',14);
+    xlabel('Imposed Motion (Bar Width/Frame');
     ylabel({'Probability Correct' ; '(normalized)'},'FontSize',14);
     title(sprintf('Filter: %s',filterModels{ff}),'FontSize',16);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
@@ -340,29 +340,29 @@ for ff = 1:nFilterModels
     legendStr = {};
     nextLegend = 1;
 
-    parh = errorbar(theShifts,grandMeanPlotErrorPar{ff}, ...
+    parh = errorbar(theShifts/2,grandMeanPlotErrorPar{ff}, ...
         semMeanPlotErrorPar{ff},'o');
     parh.Color = theColors(1,:);
     parh.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPlotErrorPar{ff}, ...
+    plot(theShifts/2,grandMeanPlotErrorPar{ff}, ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
     legendStr{nextLegend} = 'Parallel'; nextLegend = nextLegend + 1;
 
-    perph = errorbar(theShifts,grandMeanPlotErrorPerp{ff}, ...
+    perph = errorbar(theShifts/2,grandMeanPlotErrorPerp{ff}, ...
         semMeanPlotErrorPerp{ff},'o');
     perph.Color = theColors(2,:);
     perph.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
-    plot(theShifts,grandMeanPlotErrorPerp{ff}, ...
+    plot(theShifts/2,grandMeanPlotErrorPerp{ff}, ...
         '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
     legendStr{nextLegend} = 'Orthogonal'; nextLegend = nextLegend + 1;
 
     % Tidy up
-    xlim([0 5]);
+    xlim([0 5]/2);
     ylim([0.3 1]);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
-    xlabel('Shift Per Frame (min)');
+    xlabel('Imposed Motion (Bar Width/Frame');
     ylabel('Raw Fraction Correct')
     title(sprintf('Filter: %s',filterModels{ff}));
     nextSummaryPlotError = nextSummaryPlotError + 1;
