@@ -1,4 +1,4 @@
-% BerkeleyAOTumblingEAnalyze
+% BerkeleyAOTumblingEAnalyzeIntermixed
 %
 % Collect up and analyze output of the calcuations
 
