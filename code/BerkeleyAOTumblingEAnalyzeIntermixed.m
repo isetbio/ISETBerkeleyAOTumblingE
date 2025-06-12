@@ -11,10 +11,10 @@ verbose = false;
 %% Parameters
 %
 % These need to match up with those used at calculation time.
-calcName = 'Calcs5';
+calcName = 'Calcs6';
 theShifts = [0 1 2 4];
 nShifts = length(theShifts);
-nReplications = 8;
+nReplications = 15;
 filterModels = {'None', 'Photocurrent', 'Watson w/ Adaptation'};
 nFilterModels = length(filterModels);
 shiftDirections = [90 270 0 180];
