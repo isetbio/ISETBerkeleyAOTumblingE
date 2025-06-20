@@ -288,7 +288,7 @@ for ff = 1:nFilterModels
     legendStr{nextLegend} = 'Both'; nextLegend = nextLegend + 1;
 
     % Tidy up
-    xlim([0 5]/2);
+    xlim([0 4.5]/2);
     ylim([0 0.5]);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
     xlabel('Imposed Motion (Bar Width/Frame');
@@ -298,7 +298,9 @@ for ff = 1:nFilterModels
 
     % Normalzed fraction correct by shift plot
     figure(summaryFigureNormalized);
+    set(gcf,"Position",[100 100 2100 700]);
     subplot(1,3,nextSummaryPlotNormalized); hold on;
+    set(gca,'FontName','Helvetica','FontSize',18);
     legendStr = {};
     nextLegend = 1;
 
@@ -308,7 +310,7 @@ for ff = 1:nFilterModels
     parh.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
     plot(theShifts/2,grandMeanPCorrectPar{ff}/grandMeanPCorrectPar{ff}(index0), ...
-        '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
+        '-o','MarkerSize',12,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
     legendStr{nextLegend} = 'Parallel'; nextLegend = nextLegend + 1;
 
     perph = errorbar(theShifts/2,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
@@ -317,26 +319,28 @@ for ff = 1:nFilterModels
     perph.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
     plot(theShifts/2,grandMeanPCorrectPerp{ff}/grandMeanPCorrectPerp{ff}(index0), ...
-        '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
+        '-o','MarkerSize',12,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
     legendStr{nextLegend} = 'Orthogonal'; nextLegend = nextLegend + 1;
 
     % Add the normalized average
-    plot(theShifts/2,grandMeanPCorrect{ff}/grandMeanPCorrect{ff}(index0), ...
-        'k:','LineWidth',2);
-    legendStr{nextLegend} = 'Average'; nextLegend = nextLegend + 1;
+    % plot(theShifts/2,grandMeanPCorrect{ff}/grandMeanPCorrect{ff}(index0), ...
+    %     'k:','LineWidth',2);
+    % legendStr{nextLegend} = 'Average'; nextLegend = nextLegend + 1;
 
     % Tidy up
     xlim([0 5]/2);
-    ylim([0.7 1.1]);
-    xlabel('Imposed Motion (Bar Width/Frame');
-    ylabel({'Probability Correct' ; '(normalized)'},'FontSize',14);
-    title(sprintf('Filter: %s',filterModels{ff}),'FontSize',16);
+    ylim([0.7 1.05]);
+    xlabel('Motion (Bar Width/Frame','FontSize',20);
+    ylabel({'Probability Correct' ; '(normalized)'},'FontSize',20);
+    title(sprintf('Filter: %s',filterModels{ff}),'FontSize',20);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
     nextSummaryPlotNormalized = nextSummaryPlotNormalized + 1;
 
     % Summary figure error
     figure(summaryFigureError);
+    set(gcf,"Position",[100 100 2100 700]);
     subplot(1,3,nextSummaryPlotError); hold on;
+    set(gca,'FontName','Helvetica','FontSize',18);
     legendStr = {};
     nextLegend = 1;
 
@@ -346,7 +350,7 @@ for ff = 1:nFilterModels
     parh.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
     plot(theShifts/2,grandMeanPlotErrorPar{ff}, ...
-        '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
+        '-o','MarkerSize',12,'LineWidth',2,'Color',theColors(1,:),'MarkerFaceColor',theColors(1,:));
     legendStr{nextLegend} = 'Parallel'; nextLegend = nextLegend + 1;
 
     perph = errorbar(theShifts/2,grandMeanPlotErrorPerp{ff}, ...
@@ -355,16 +359,16 @@ for ff = 1:nFilterModels
     perph.LineWidth = 2;
     legendStr{nextLegend} = ''; nextLegend = nextLegend + 1;
     plot(theShifts/2,grandMeanPlotErrorPerp{ff}, ...
-        '-o','MarkerSize',8,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
+        '-o','MarkerSize',12,'LineWidth',2,'Color',theColors(2,:),'MarkerFaceColor',theColors(2,:));
     legendStr{nextLegend} = 'Orthogonal'; nextLegend = nextLegend + 1;
 
     % Tidy up
-    xlim([0 5]/2);
-    ylim([0.3 1]);
+    xlim([0 4.5]/2);
+    ylim([0.3 0.9]);
     legend(legendStr,'FontSize',14,'Location','SouthEast');
-    xlabel('Imposed Motion (Bar Width/Frame');
-    ylabel('Raw Fraction Correct')
-    title(sprintf('Filter: %s',filterModels{ff}));
+    xlabel('Motion (Bar Width/Frame','FontSize',20);
+    ylabel('Fraction 90 deg Error','FontSize',20);
+    title(sprintf('Filter: %s',filterModels{ff}),'FontSize',20);
     nextSummaryPlotError = nextSummaryPlotError + 1;
 end
 
