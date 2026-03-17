@@ -2,6 +2,9 @@
 %
 % Code that models Tuten AO stabilized and not tumbling E experiment.
 % This sets up options to match the experiment and runs the calculations.
+%
+% This can cause Matlab to crash.  Set a small number of workers in a
+% parpool may help.
 
 %% Clear
 clear; close all;
