@@ -1,7 +1,6 @@
-% BerkeleyAOTumblingECalcs
+% BerkeleyAOTumblingECalcsVisualize
 %
-% Code that models Tuten AO stabilized and not tumbling E experiment.
-% This sets up options to match the experiment and runs the calculations.
+% Produces some visualizations related to the Tuten tumbling E experiment.
 
 %% Clear
 clear; close all;
