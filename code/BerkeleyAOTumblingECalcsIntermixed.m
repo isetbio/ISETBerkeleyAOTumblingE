@@ -106,7 +106,8 @@ watsonParams_tau = 12;
 noiseSds = [20 20 20];
 jitterRangeMinutes = 3;
 %parfor rr = 1:nReplications
-for rr = 1:nReplications
+%for rr = 1:nReplications
+for rr = 3:nReplications
     for ff = 1:nFilterModels
         jitterMinutesX = jitterRangeMinutes*(rand-0.5);
         jitterMinutesY = jitterRangeMinutes*(rand-0.5);
@@ -141,6 +142,9 @@ for rr = 1:nReplications
             'visualizeEsWhichFrames', offFramesStart+1, ...
             'fileSuffix', fileSuffix, ...
             'validationThresholds',[]);
+
+        % Prevent figure buildup
+        close all;
     end
 end
 
