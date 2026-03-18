@@ -13,6 +13,11 @@
 %
 % TODO: Save plots for paper.  Save out tabular data.
 
+% 2026-03-18, DHB: Reran the calculations above (4 replications) and
+% verfied that the plots have the key features as the data run and saved in
+% June 2025 with 16 replications, with slight differences I attribute to
+% run-to-run noise. So everything seems stable and replicable.
+
 % Run BerkeleyAOTumblingECalcsVisualize to produce some movies of the
 % stimulus.
 %
