@@ -11,17 +11,22 @@
 % so you can snag that manually if desired.  Use 'Calcs6' and match
 % nReplications to the number you computed for.
 %
-% TODO: Save plots for paper.  Save out tabular data.
+% This also saves out the data that was plotted in three tables, one for
+% each of the plots.  I have not checked in detail that these match up with
+% the plots, but I spotted checked a few numbers that do. If you use these,
+% plot from the tables and verify matching up with the Matlab generated
+% plots.
 
 % 2026-03-18, DHB: Reran the calculations above (4 replications) and
 % verfied that the plots have the key features as the data run and saved in
 % June 2025 with 16 replications, with slight differences I attribute to
-% run-to-run noise. So everything seems stable and replicable.
+% run-to-run noise. Regenerated videos. So everything seems stable and replicable.
 
 % Run BerkeleyAOTumblingECalcsVisualize to produce some movies of the
-% stimulus.
-%
-% TODO: Check that this still runs and document what it produces.
+% stimulus. These come out in directories with Visualize6 in their names,
+% under the same results and figures directories as the main calculations.
+% There are movies both with and without noise, for each filter and spatial
+% displacement.
 
 % Run PlotTIR for a plot of the temporal impulse response.
 %
