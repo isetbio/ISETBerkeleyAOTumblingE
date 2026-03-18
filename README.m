@@ -28,9 +28,7 @@
 % There are movies both with and without noise, for each filter and spatial
 % displacement.
 
-% Run PlotTIR for a plot of the temporal impulse response.
-%
-% TODO: Check that this still runs and document what it produces.
+% Run PlotTIR for plots of the temporal impulse responses (photocurrent and Watson).
 
 % Run validation/ieValidateISETBerkeleyAOTumblingE to run some basic
 % validations on the operation of the code.  Checks that the examples
