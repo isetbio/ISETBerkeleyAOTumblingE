@@ -25,13 +25,19 @@ nEOrientations = length(eOrientations);
 %% Set up summary filename and output dir, where we read in data from
 options.rootPath = getpref('ISETBerkeleyAOTumblingE','dataPath');
 
+%% Results and fig loc
+resultsDir = 'results';
+figsDir = 'figures';
+% resultsDir = 'results_2026-03-18-Check';
+% figsDir = 'figures_2026-03-18-Check';
+
 %% Loop over data and read it in
 for rr = 1:nReplications
     for ff = 1:length(filterModels)
         % Full intermixed output, by filter and replication
         options.fileSuffix = sprintf('%s_%s_Rep_%d_filter_%d',calcName,'Intermixed',rr,ff);
         summaryFileName = ['BerkeleyAOTumblingEThreshold_' options.fileSuffix];
-        options.outputResultsDir = fullfile(options.rootPath,'results',summaryFileName);
+        options.outputResultsDir = fullfile(options.rootPath,resultsDir,summaryFileName);
         theData{rr,ff} = load(fullfile(options.outputResultsDir,[summaryFileName '.mat']), ...
             'options','pCorrect','pRespondAAWithStimBB','tByTPerformance','tByTResponseAlternatives','tByTStimAlternatives','options');
         nTest(rr,ff) = length(theData{rr,ff}.tByTStimAlternatives);
@@ -371,6 +377,11 @@ for ff = 1:nFilterModels
     title(sprintf('Filter: %s',filterModels{ff}),'FontSize',20);
     nextSummaryPlotError = nextSummaryPlotError + 1;
 end
+
+%% Save figures
+print(summaryFigureNormalized,fullfile(options.rootPath,figsDir,[calcName '_summaryNormalized.tiff']),'-dtiff','-r300');
+print(summaryFigureRaw,fullfile(options.rootPath,figsDir,[calcName '_summaryRaw.tiff']),'-dtiff','-r300');
+print(summaryFigureError,fullfile(options.rootPath,figsDir,[calcName '_summaryError.tiff']),'-dtiff','-r300');
 
 %% Get pCorrect and other wonderful things as a function base shift
 %
